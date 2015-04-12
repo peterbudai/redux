@@ -1,0 +1,4 @@
+[package]
+name = "Redox"
+version = "0.0.1"
+authors = ["Péter Budai <buc@peterbudai.eu>"]
