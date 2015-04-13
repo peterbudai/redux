@@ -31,8 +31,5 @@ impl Status {
 
 pub fn compress(input: &mut Read, output: &mut Write) {
     let st = Status::init();
-    for i in 0..258 {
-        println!("{} -> {}", i, st.freq[i]);
-    }
 }
 

@@ -1,9 +1,9 @@
 use std::io::*;
 
-mod redox;
+mod redux;
 
 fn main() {
     let mut input = std::io::stdin();
     let mut output  = std::io::stdout();
-    redox::compress(&mut input, &mut output);
+    redux::compress(&mut input, &mut output);
 }
