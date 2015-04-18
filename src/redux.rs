@@ -4,38 +4,41 @@ use std::io::Result;
 use std::io::Error;
 use std::io::ErrorKind;
 
-enum ReadResult<T> {
-    Ok(T),
-    Eof(T),
-    Err(Error)
-}
+const BUFFER_SIZE : usize = 256us;
 
 struct Buffer {
-    data: [u8; 256],
+    data: [u8; BUFFER_SIZE],
     len: usize,
     cur: usize,
-    bit: u8
+    bit: u8,
+    sum: u64
 }
 
 impl Buffer {
     fn create() -> Buffer {
         return Buffer { 
-            data: [0u8; 256], 
+            data: [0u8; BUFFER_SIZE], 
             len: 0us, 
             cur: 0us, 
-            bit: 7u8
+            bit: 7u8,
+            sum: 0u64
         };
     }
 
-    fn fill(&mut self, istream: &mut Read) -> ReadResult<()> {
+    fn fill(&mut self, istream: &mut Read) -> Result<bool> {
         match istream.read(&mut self.data[0..]) {
-            Ok(0) => ReadResult::Eof(()),
-            Ok(n) => { self.len = n; self.cur = 0; ReadResult::Ok(()) },
-            Err(e) => ReadResult::Err(e)
+            Ok(0) => Ok(true),
+            Ok(n) => { 
+                self.sum += n as u64;
+                self.len = n; 
+                self.cur = 0; 
+                Ok(false) 
+            },
+            Err(e) => Err(e)
         }
     }
 
-    fn pull(&mut self, istream: &mut Read) -> ReadResult<u8> {
+    fn pull(&mut self, istream: &mut Read) -> Result<(u8, bool)> {
         let value = (self.data[self.cur] & (1 << self.bit)) >> self.bit;
 
         if self.bit == 0 {
@@ -43,15 +46,14 @@ impl Buffer {
             self.cur += 1;
             if self.cur == self.len {
                 return match self.fill(istream) {
-                    ReadResult::Ok(_) => ReadResult::Ok(value),
-                    ReadResult::Eof(_) => ReadResult::Eof(value),
-                    ReadResult::Err(e) => ReadResult::Err(e)
+                    Ok(b) => Ok((value, b)),
+                    Err(e) => Err(e)
                 }
             }
         } else {
             self.bit -= 1;
         }
-        return ReadResult::Ok(value);
+        return Ok((value, false));
     }
 
     fn flush(&mut self, ostream: &mut Write) -> Result<()> {
@@ -63,7 +65,10 @@ impl Buffer {
         while self.cur < self.len {
             match ostream.write(&self.data[self.cur..self.len]) {
                 Ok(0) => { return Err(Error::new(ErrorKind::WriteZero, "Zero bytes written to output")); }
-                Ok(n) => { self.cur += n; },
+                Ok(n) => { 
+                    self.cur += n; 
+                    self.sum += n as u64;
+                },
                 Err(e) => { return Err(e); }
             }
         }
@@ -118,35 +123,33 @@ impl Status {
         }
         return res;
     }
+
+    fn metrics(&self) -> (u64, u64) {
+        return (self.input.sum , self.output.sum);
+    }
 }
 
-pub fn compress(istream: &mut Read, ostream: &mut Write) {
+pub fn compress(istream: &mut Read, ostream: &mut Write) -> Result<(u64, u64)> {
     let mut st = Status::init();
-    let mut v = 0u8;
     let mut count = 0u64;
-/*
-    if st.input.fill(istream) != IOResult::Success {
-        return;
+
+    if try!(st.input.fill(istream)) {
+        return Ok(st.metrics());
     }
 
     loop {
-        r = st.input.pull(&mut v, istream);
+        let (v, eof) = try!(st.input.pull(istream));
+        try!(st.output.push(v, ostream));
 
-        if st.output.push(v, ostream) == IOResult::Error { 
-            r = IOResult::Error;
+        count += 1;
+        if count >= 236 || eof {
             break;
         }
-
-        if r == IOResult::EOF {
-            break;
-        }
-
-        
-            count += 1;
-        }
-        st.output.flush(ostream);
     }
-*/
+
+    try!(st.output.flush(ostream));
+
     println!("{} bits", count);
+    return Ok(st.metrics());
 }
 
