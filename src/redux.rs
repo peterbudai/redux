@@ -99,6 +99,13 @@ impl Buffer {
     }
 
     fn put_byte(&mut self, value: u8, ostream: &mut Write) -> Result<()> {
+        self.data[self.len] = value;
+        self.len += 1;
+        if self.len == self.data.len() {
+            if let Err(e) = self.flush_buffer(ostream) {
+                return Err(e);
+            }
+        }
         return Ok(());
     }
 
@@ -148,8 +155,20 @@ impl Status {
         return res;
     }
 
+    fn get_count(&self) -> u64 {
+        self.freq[self.freq.len() - 1]
+    }
+
     fn get_probability(&self, chr: usize) -> (u64, u64, u64) {
         (self.freq[chr], self.freq[chr + 1], self.freq[self.freq.len() - 1])
+    }
+
+    fn get_char(&self, scaled: u64) -> (usize, u64, u64) {
+        let index = match self.freq.binary_search(&scaled) {
+            Ok(i) => i,
+            Err(i) => i - 1
+        };
+        (index, self.freq[index], self.freq[index + 1])
     }
 
     fn put_pending_bits(&mut self, bit: u8, ostream: &mut Write) -> Result<()> {
@@ -162,7 +181,7 @@ impl Status {
     }
 
     fn metrics(&self) -> (u64, u64) {
-        (self.input.sum , self.output.sum)
+        (self.input.sum, self.output.sum)
     }
 }
 
@@ -222,13 +241,66 @@ pub fn compress(istream: &mut Read, ostream: &mut Write) -> Result<(u64, u64)> {
 
 pub fn decompress(istream: &mut Read, ostream: &mut Write) -> Result<(u64, u64)> {
     let mut status = Status::init();
+    let mut value = 0u64;
 
-    let mut eof = try!(status.input.fill_buffer(istream));
-    loop {
-        break;
+    if try!(status.input.fill_buffer(istream)) {
+        return Err(Error::new(ErrorKind::InvalidInput, "Empty input stream"));
     }
-    try!(status.output.flush_buffer(ostream));
+    let mut eof = false;
+    for i in 0..CODE_BITS {
+        value = match status.input.get_bit(istream) {
+            Ok((b, e)) => { eof = e; (value << 1) | b as u64 },
+            Err(e) => { return Err(e); }
+        };
+    }
 
+    loop {
+        {
+            status.range = status.high - status.low + 1;
+            let count = status.get_count();
+            let scaled = ((value - status.low + 1) * count - 1) / status.range;
+            let (chr, low, high) = status.get_char(scaled);
+
+            if chr == EOF_VALUE {
+                break;
+            } else {
+                try!(status.output.put_byte(chr as u8, ostream));
+            }
+            
+            status.high = status.low + (status.range * high / count) - 1;
+            status.low = low + (status.range * low / count);
+        }
+        
+        loop {
+            if status.high < ONE_HALF {
+                // do nothing
+            } else if status.low >= ONE_HALF {
+                value -= ONE_HALF;
+                status.low -= ONE_HALF;
+                status.high -= ONE_HALF;
+            } else if status.low >= ONE_FOURTH && status.high < THREE_FOURTHS {
+                value -= ONE_FOURTH;
+                status.low -= ONE_FOURTH;
+                status.high -= ONE_FOURTH;
+            } else {
+                break;
+            }
+
+            status.high = (status.high << 1) + 1;
+            status.low = status.low << 1;
+
+            if eof {
+                return Err(Error::new(ErrorKind::InvalidInput, "Unexpected end of input stream"));
+            } else {
+                value = match status.input.get_bit(istream) {
+                    Ok((b, e)) => { eof = e; (value << 1) | b as u64 },
+                    Err(e) => { return Err(e); }
+                };
+            }
+        }
+    }
+
+    try!(status.output.flush_buffer(ostream));
     return Ok(status.metrics());
 }
 
