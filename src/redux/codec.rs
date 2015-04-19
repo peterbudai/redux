@@ -4,7 +4,7 @@ use std::io::Result;
 use std::io::Error;
 use std::io::ErrorKind;
 
-const BUFFER_SIZE: usize = 16384;
+use super::buffer::Buffer;
 
 const VALUE_BITS: usize = 8;
 const VALUE_EOF: usize = 1 << VALUE_BITS;
@@ -20,122 +20,7 @@ const THREE_FOURTHS: u64 = 3 * ONE_FOURTH;
 const FREQ_BITS: usize = 14; // 64 - CODE_BITS;
 const FREQ_MAX: u64 = (1 << FREQ_BITS) - 1;
 
-struct Buffer {
-    data: [u8; BUFFER_SIZE],
-    len: usize,
-    cur: usize,
-    bit: u8,
-    sum: u64
-}
-
-impl Buffer {
-    fn create() -> Buffer {
-        return Buffer {
-            data: [0u8; BUFFER_SIZE],
-            len: 0us,
-            cur: 0us,
-            bit: 7u8,
-            sum: 0u64
-        };
-    }
-
-    fn fill_buffer(&mut self, istream: &mut Read) -> Result<bool> {
-        match istream.read(&mut self.data[0..]) {
-            Ok(0) => Ok(true),
-            Ok(n) => {
-                self.sum += n as u64;
-                self.len = n;
-                self.cur = 0;
-                Ok(false)
-            },
-            Err(e) => Err(e)
-        }
-    }
-
-    fn get_byte(&mut self, istream: &mut Read) -> Result<(u8, bool)> {
-        let value = self.data[self.cur];
-        self.cur += 1;
-        if self.cur == self.len {
-            return match self.fill_buffer(istream) {
-                Ok(b) => Ok((value, b)),
-                Err(e) => Err(e)
-            }
-        } else {
-            return Ok((value, false));
-        }
-    }
-
-    fn get_bit(&mut self, istream: &mut Read) -> Result<(u8, bool)> {
-        let value = (self.data[self.cur] & (1 << self.bit)) >> self.bit;
-
-        if self.bit == 0 {
-            self.bit = 7;
-            self.cur += 1;
-            if self.cur == self.len {
-                return match self.fill_buffer(istream) {
-                    Ok(b) => Ok((value, b)),
-                    Err(e) => Err(e)
-                }
-            }
-        } else {
-            self.bit -= 1;
-        }
-        return Ok((value, false));
-    }
-
-    fn flush_buffer(&mut self, ostream: &mut Write) -> Result<()> {
-        // Flush the remaining incomplete byte as well
-        if self.bit < 7 {
-            self.len += 1;
-        }
-
-        while self.cur < self.len {
-            match ostream.write(&self.data[self.cur..self.len]) {
-                Ok(0) => { return Err(Error::new(ErrorKind::WriteZero, "Zero bytes written to output")); }
-                Ok(n) => {
-                    self.cur += n;
-                    self.sum += n as u64;
-                },
-                Err(e) => { return Err(e); }
-            }
-        }
-
-        self.len = 0;
-        self.cur = 0;
-        return Ok(());
-    }
-
-    fn put_byte(&mut self, value: u8, ostream: &mut Write) -> Result<()> {
-        self.data[self.len] = value;
-        self.len += 1;
-        if self.len == self.data.len() {
-            if let Err(e) = self.flush_buffer(ostream) {
-                return Err(e);
-            }
-        }
-        return Ok(());
-    }
-
-    fn put_bit(&mut self, value: u8, ostream: &mut Write) -> Result<()> {
-        self.data[self.len] |= value << self.bit;
-
-        if self.bit == 0 {
-            self.bit = 7;
-            self.len += 1;
-            if self.len == self.data.len() {
-                if let Err(e) = self.flush_buffer(ostream) {
-                    return Err(e);
-                }
-            }
-            self.data[self.len] = 0;
-        } else {
-            self.bit -= 1;
-        }
-        return Ok(());
-    }
-}
-
-struct Status {
+pub struct Codec {
     low: u64,
     high: u64,
     pending: u64,
@@ -144,9 +29,9 @@ struct Status {
     output: Buffer
 }
 
-impl Status {
-    fn init() -> Status {
-        let mut res = Status {
+impl Codec {
+    pub fn init() -> Codec {
+        let mut res = Codec {
             low: CODE_MIN,
             high: CODE_MAX,
             pending: 0u64,
@@ -188,8 +73,8 @@ impl Status {
         return res;
     }
 
-    fn get_metrics(&self) -> (u64, u64) {
-        (self.input.sum, self.output.sum)
+    pub fn get_metrics(&self) -> (u64, u64) {
+        (self.input.get_count(), self.output.get_count())
     }
 
     fn put_bits(&mut self, bit: u8, ostream: &mut Write) -> Result<()> {
@@ -201,7 +86,7 @@ impl Status {
         return Ok(());
     }
 
-    fn compress(&mut self, istream: &mut Read, ostream: &mut Write) -> Result<()> {
+    pub fn compress(&mut self, istream: &mut Read, ostream: &mut Write) -> Result<()> {
         let mut eof = try!(self.input.fill_buffer(istream));
         loop {
             let chr = if eof {
@@ -253,7 +138,7 @@ impl Status {
         return Ok(());
     }
 
-    fn decompress(&mut self, istream: &mut Read, ostream: &mut Write) -> Result<()> {
+    pub fn decompress(&mut self, istream: &mut Read, ostream: &mut Write) -> Result<()> {
         if try!(self.input.fill_buffer(istream)) {
             return Err(Error::new(ErrorKind::InvalidInput, "Empty input stream"));
         }
@@ -318,17 +203,5 @@ impl Status {
         try!(self.output.flush_buffer(ostream));
         return Ok(());
     }
-}
-
-pub fn compress(istream: &mut Read, ostream: &mut Write) -> Result<(u64, u64)> {
-    let mut status = Status::init();
-    try!(status.compress(istream, ostream));
-    return Ok(status.get_metrics());
-}
-
-pub fn decompress(istream: &mut Read, ostream: &mut Write) -> Result<(u64, u64)> {
-    let mut status = Status::init();
-    try!(status.decompress(istream, ostream));
-    return Ok(status.get_metrics());
 }
 
