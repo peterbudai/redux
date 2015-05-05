@@ -8,8 +8,6 @@ use super::model::SYMBOL_EOF;
 const CODE_BITS_MAX: usize = 64 / 2 + 1;
 
 pub struct Codec<'a> {
-    code_bits: usize,
-    code_min: u64,
     code_one_fourth: u64,
     code_half: u64,
     code_three_fourths: u64,
@@ -24,13 +22,11 @@ pub struct Codec<'a> {
 
 impl<'a> Codec<'a> {
     pub fn init(bits: usize, m: &'a mut Model) -> Result<Codec<'a>> {
-        if(bits < m.get_frequency_bits() + 2 || CODE_BITS_MAX < bits) {
+        if bits < m.get_frequency_bits() + 2 || CODE_BITS_MAX < bits {
             return Err(InvalidInput);
         }
 
         Ok(Codec {
-            code_bits: bits,
-            code_min: 0,
             code_one_fourth: 1 << (bits - 2),
             code_half: 2 << (bits - 2),
             code_three_fourths: 3 << (bits - 2),
@@ -104,7 +100,8 @@ impl<'a> Codec<'a> {
         }
 
         while self.extra > 0 {
-            try!(self.put_bits(self.low & self.code_half != 0, output));
+            let mask = self.low & self.code_half;
+            try!(self.put_bits(mask != 0, output));
             self.low = (self.low << 1) & self.code_max;
             self.extra -= 1;
         }

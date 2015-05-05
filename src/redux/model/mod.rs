@@ -1,7 +1,6 @@
 pub mod adaptive_linear;
 
 use super::Result;
-use super::Error::InvalidInput;
 
 /// Number of bits of the input symbols
 const SYMBOL_BITS: usize = 8;

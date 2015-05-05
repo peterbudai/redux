@@ -7,7 +7,7 @@ use super::super::Error::InvalidInput;
 /// and simple, but slow linear algorithms for operations.
 pub struct AdaptiveLinearModel {
     /// Array of comulative frequencies
-    freq: [u64; SYMBOL_COUNT + 1], 
+    freq: [u64; SYMBOL_COUNT + 1],
     /// Number of bits used for cumulative frequencies
     freq_bits: usize,
     /// Maximum allowed value for cumulative frequencies
@@ -16,11 +16,11 @@ pub struct AdaptiveLinearModel {
 
 impl AdaptiveLinearModel {
     pub fn init(bits: usize) -> Result<AdaptiveLinearModel> {
-        if(bits < FREQ_BITS_MIN || FREQ_BITS_MAX < bits) {
+        if bits < FREQ_BITS_MIN || FREQ_BITS_MAX < bits {
             return Err(InvalidInput);
         }
 
-        let m = AdaptiveLinearModel {
+        let mut m = AdaptiveLinearModel {
             freq: [0; SYMBOL_COUNT + 1],
             freq_bits: bits,
             freq_max: (1 << bits) - 1,

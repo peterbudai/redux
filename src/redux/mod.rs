@@ -23,11 +23,11 @@ pub enum Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
-        f.write_fmt(match *self {
-            Error::Eof => format_args!("Unexpected end of file"),
-            Error::InvalidInput => format_args!("Invalid data found while processing input"),
-            Error::IoError(e) => format_args!("I/O error: {}", e),
-        })
+        match *self {
+            Error::Eof => f.write_str("Unexpected end of file"),
+            Error::InvalidInput => f.write_str("Invalid data found while processing input"),
+            Error::IoError(ref e) => f.write_fmt(format_args!("I/O error: {}", e)),
+        }
     }
 }
 
