@@ -4,6 +4,7 @@ mod model;
 
 use std::io;
 use std::result;
+use std::fmt;
 use self::codec::Codec;
 use self::bitio::BitReader;
 use self::bitio::BitWriter;
@@ -17,14 +18,24 @@ pub enum Error {
     /// the library was unable to process.
     InvalidInput,
     /// An I/O error occured.
-    IoError(io::Error)
+    IoError(io::Error),
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
+        f.write_fmt(match *self {
+            Error::Eof => format_args!("Unexpected end of file"),
+            Error::InvalidInput => format_args!("Invalid data found while processing input"),
+            Error::IoError(e) => format_args!("I/O error: {}", e),
+        })
+    }
 }
 
 pub type Result<T> = result::Result<T, Error>;
 
 pub fn compress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
-    let mut model = AdaptiveLinearModel::<u64>::init(16, 14);
-    let mut codec = Codec::init(&mut model);
+    let mut model = try!(AdaptiveLinearModel::init(14));
+    let mut codec = try!(Codec::init(16, &mut model));
     let mut input = BitReader::create(istream);
     let mut output = BitWriter::create(ostream);
 
@@ -33,8 +44,8 @@ pub fn compress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64,
 }
 
 pub fn decompress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
-    let mut model = AdaptiveLinearModel::<u64>::init(16, 14);
-    let mut codec = Codec::init(&mut model);
+    let mut model = try!(AdaptiveLinearModel::init(14));
+    let mut codec = try!(Codec::init(16, &mut model));
     let mut input = BitReader::create(istream);
     let mut output = BitWriter::create(ostream);
 

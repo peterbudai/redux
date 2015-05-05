@@ -1,29 +1,47 @@
-use std::io::Read;
-use std::io::Write;
 use super::Result;
-use super::Error::Eof;
+use super::Error::{Eof, InvalidInput};
 use super::bitio::{ByteRead, BitRead};
 use super::bitio::{ByteWrite, BitWrite};
 use super::model::Model;
-use super::model::VALUE_EOF;
+use super::model::SYMBOL_EOF;
 
-pub struct Codec<'a, T> {
-    low: T,
-    high: T,
-    pending: T,
+const CODE_BITS_MAX: usize = 64 / 2 + 1;
+
+pub struct Codec<'a> {
+    code_bits: usize,
+    code_min: u64,
+    code_one_fourth: u64,
+    code_half: u64,
+    code_three_fourths: u64,
+    code_max: u64,
+
+    low: u64,
+    high: u64,
+    pending: u64,
     extra: usize,
-    model: &'a mut Model<T>,
+    model: &'a mut Model,
 }
 
-impl<'a, T> Codec<'a, T> {
-    pub fn init(m: &'a mut Model<T>) -> Codec<'a, T> {
-        Codec {
-            low: m.params().code_min,
-            high: m.params().code_max,
-            pending: 0,
-            extra: m.params().code_bits,
-            model: m
+impl<'a> Codec<'a> {
+    pub fn init(bits: usize, m: &'a mut Model) -> Result<Codec<'a>> {
+        if(bits < m.get_frequency_bits() + 2 || CODE_BITS_MAX < bits) {
+            return Err(InvalidInput);
         }
+
+        Ok(Codec {
+            code_bits: bits,
+            code_min: 0,
+            code_one_fourth: 1 << (bits - 2),
+            code_half: 2 << (bits - 2),
+            code_three_fourths: 3 << (bits - 2),
+            code_max: (1 << bits) - 1,
+
+            low: 0,
+            high: (1 << bits) - 1,
+            pending: 0,
+            extra: bits,
+            model: m,
+        })
     }
 
     fn put_bits(&mut self, bit: bool, output: &mut BitWrite) -> Result<()> {
@@ -36,60 +54,58 @@ impl<'a, T> Codec<'a, T> {
     }
 
     pub fn compress(&mut self, input: &mut ByteRead, output: &mut BitWrite) -> Result<()> {
-        let params = self.model.params();
-
         loop {
-            let chr = match input.read_byte() {
+            let symbol = match input.read_byte() {
                 Ok(b) => b as usize,
-                Err(Eof) => VALUE_EOF,
+                Err(Eof) => SYMBOL_EOF,
                 Err(e) => { return Err(e); }
             };
 
             {
-                let count = self.model.get_count();
-                let (low, high) = self.model.get_probability(chr);
+                let count = self.model.get_total_frequency();
+                let (low, high) = try!(self.model.get_frequency(symbol));
                 let range = self.high - self.low + 1;
                 self.high = self.low + (range * high / count) - 1;
                 self.low = self.low + (range * low / count);
             }
 
             loop {
-               if self.high < params.code_one_half {
-                   try!(self.put_bits(0, output));
+               if self.high < self.code_half {
+                   try!(self.put_bits(false, output));
 
-                   if chr == VALUE_EOF {
+                   if symbol == SYMBOL_EOF {
                        self.extra -= 1;
                    }
-               } else if self.low >= params.code_one_half {
-                   try!(self.put_bits(1, output));
+               } else if self.low >= self.code_half {
+                   try!(self.put_bits(true, output));
 
-                   if chr == VALUE_EOF {
+                   if symbol == SYMBOL_EOF {
                        self.extra -= 1;
                    }
-               } else if self.low >= params.code_one_fourth && self.high < params.code_three_fourths {
+               } else if self.low >= self.code_one_fourth && self.high < self.code_three_fourths {
                    self.pending += 1;
-                   self.low -= params.code_one_fourth;
-                   self.high -= params.code_one_fourth;
+                   self.low -= self.code_one_fourth;
+                   self.high -= self.code_one_fourth;
 
-                   if chr == VALUE_EOF {
+                   if symbol == SYMBOL_EOF {
                        self.extra -= 1;
                    }
                } else {
                    break;
                }
 
-               self.high = ((self.high << 1) + 1) & params.code_max;
-               self.low = (self.low << 1) & params.code_max;
+               self.high = ((self.high << 1) + 1) & self.code_max;
+               self.low = (self.low << 1) & self.code_max;
             }
 
-            if chr == VALUE_EOF {
+            if symbol == SYMBOL_EOF {
                 break;
             }
         }
 
         while self.extra > 0 {
-            try!(self.put_bits(self.low & params.code_half != 0, output));
-            self.low = (self.low << 1) & params.code_max;
+            try!(self.put_bits(self.low & self.code_half != 0, output));
+            self.low = (self.low << 1) & self.code_max;
             self.extra -= 1;
         }
         try!(output.flush_bits());
@@ -99,11 +115,10 @@ impl<'a, T> Codec<'a, T> {
 
     fn get_bit(&mut self, input: &mut BitRead) -> Result<()> {
         self.pending = (self.pending << 1) | if try!(input.read_bit()) { 1 } else { 0 };
+        Ok(())
     }
 
     pub fn decompress(&mut self, input: &mut BitRead, output: &mut ByteWrite) -> Result<()> {
-        let params = self.model.params();
-
         while self.extra > 0 {
             try!(self.get_bit(input));
             self.extra -= 1;
@@ -112,14 +127,14 @@ impl<'a, T> Codec<'a, T> {
         loop {
             {
                 let range = self.high - self.low + 1;
-                let count = self.get_count();
+                let count = self.model.get_total_frequency();
                 let value = ((self.pending - self.low + 1) * count - 1) / range;
-                let (chr, low, high) = self.get_char(value);
+                let (symbol, low, high) = try!(self.model.get_symbol(value));
 
-                if chr == VALUE_EOF {
+                if symbol == SYMBOL_EOF {
                     break;
                 } else {
-                    try!(output.write_byte(chr as u8));
+                    try!(output.write_byte(symbol as u8));
                 }
 
                 self.high = self.low + (range * high / count) - 1;
@@ -127,16 +142,16 @@ impl<'a, T> Codec<'a, T> {
             }
 
             loop {
-                if self.high < params.code_one_half {
+                if self.high < self.code_half {
                     // do nothing
-                } else if self.low >= params.code_one_half {
-                    self.pending -= params.code_one_half;
-                    self.low -= params.code_one_half;
-                    self.high -= params.code_one_half;
-                } else if self.low >= params.code_one_fourth && self.high < params.code_three_fourths {
-                    self.pending -= params.code_one_fourth;
-                    self.low -= params.code_one_fourth;
-                    self.high -= params.code_one_fourth;
+                } else if self.low >= self.code_half {
+                    self.pending -= self.code_half;
+                    self.low -= self.code_half;
+                    self.high -= self.code_half;
+                } else if self.low >= self.code_one_fourth && self.high < self.code_three_fourths {
+                    self.pending -= self.code_one_fourth;
+                    self.low -= self.code_one_fourth;
+                    self.high -= self.code_one_fourth;
                 } else {
                     break;
                 }
