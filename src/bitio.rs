@@ -1,9 +1,18 @@
+//! Bit level I/O operations.
+
 use std::io::Read;
 use std::io::Write;
 use super::Result;
 use super::Error::{Eof, IoError};
 
+/// A trait for object that allow reading one byte at a time.
+///
+/// This trait can be considered as an extension to (std::io::Write) with a simpler method signature.
 pub trait ByteWrite {
+    /// Writes a single byte to the output.
+    ///
+    /// # Failures
+    /// If the byte could not be written IoError is returned.
     fn write_byte(&mut self, byte: u8) -> Result<()>;
 }
 

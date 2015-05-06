@@ -1,7 +1,3 @@
-mod bitio;
-mod codec;
-mod model;
-
 use std::io;
 use std::result;
 use std::fmt;
@@ -9,6 +5,10 @@ use self::codec::Codec;
 use self::bitio::BitReader;
 use self::bitio::BitWriter;
 use self::model::adaptive_linear::AdaptiveLinearModel;
+
+pub mod bitio;
+pub mod codec;
+pub mod model;
 
 /// Possible errors that occur throughout this library
 pub enum Error {
