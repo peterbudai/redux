@@ -1,8 +1,8 @@
+extern crate redux;
+
 use std::io;
 use std::io::Write;
 use std::env;
-
-mod redux;
 
 macro_rules! printlne(
     ($($arg:tt)*) => (

@@ -30,7 +30,7 @@ impl<'a> BitWriter<'a> {
 
     fn write_next(&mut self) -> Result<()> {
         match self.output.write_all(&self.next) {
-            Ok(_) => Ok(()),
+            Ok(_) => { self.count += 1; Ok(()) },
             Err(e) => Err(IoError(e)),
         }
     }
@@ -97,7 +97,7 @@ impl<'a> BitReader<'a> {
     fn read_next(&mut self) -> Result<()> {
         match self.input.read(&mut self.next) {
             Ok(0) => Err(Eof),
-            Ok(_) => Ok(()),
+            Ok(_) => { self.count += 1; Ok(()) },
             Err(e) => Err(IoError(e)),
         }
     }
