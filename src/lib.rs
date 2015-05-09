@@ -4,6 +4,7 @@ use std::fmt;
 use self::codec::Codec;
 use self::bitio::BitReader;
 use self::bitio::BitWriter;
+use self::model::Parameters;
 use self::model::adaptive_linear::AdaptiveLinearModel;
 
 pub mod bitio;
@@ -34,22 +35,20 @@ impl fmt::Display for Error {
 pub type Result<T> = result::Result<T, Error>;
 
 pub fn compress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
-    let mut model = try!(AdaptiveLinearModel::init(14));
-    let mut codec = try!(Codec::init(16, &mut model));
+    let mut codec = Codec::init(AdaptiveLinearModel::init(try!(Parameters::init(8, 14, 16))));
     let mut input = BitReader::create(istream);
     let mut output = BitWriter::create(ostream);
 
-    try!(codec.compress(&mut input, &mut output));
+    try!(codec.compress_bytes(&mut input, &mut output));
     return Ok((input.get_count(), output.get_count()));
 }
 
 pub fn decompress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
-    let mut model = try!(AdaptiveLinearModel::init(14));
-    let mut codec = try!(Codec::init(16, &mut model));
+    let mut codec = Codec::init(AdaptiveLinearModel::init(try!(Parameters::init(8, 14, 16))));
     let mut input = BitReader::create(istream);
     let mut output = BitWriter::create(ostream);
 
-    try!(codec.decompress(&mut input, &mut output));
+    try!(codec.decompress_bytes(&mut input, &mut output));
     return Ok((input.get_count(), output.get_count()));
 }
 

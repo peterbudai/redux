@@ -1,38 +1,33 @@
+use std::boxed::Box;
+use std::vec::Vec;
 use super::Model;
-use super::{SYMBOL_EOF, SYMBOL_COUNT, FREQ_BITS_MIN, FREQ_BITS_MAX};
+use super::Parameters;
 use super::super::Result;
-use super::super::Error::InvalidInput;
+use super::super::Error;
 
 /// Adaptive model that uses a simple array for cumulative freq
 /// and simple, but slow linear algorithms for operations.
 pub struct AdaptiveLinearModel {
     /// Array of comulative frequencies
-    freq: [u64; SYMBOL_COUNT + 1],
-    /// Number of bits used for cumulative frequencies
-    freq_bits: usize,
-    /// Maximum allowed value for cumulative frequencies
-    freq_max: u64,
+    freq: Vec<u64>,
+    /// Arithmetic parameters
+    params: Parameters,
 }
 
 impl AdaptiveLinearModel {
-    pub fn init(bits: usize) -> Result<AdaptiveLinearModel> {
-        if bits < FREQ_BITS_MIN || FREQ_BITS_MAX < bits {
-            return Err(InvalidInput);
-        }
-
+    pub fn init(p: Parameters) -> Box<AdaptiveLinearModel> {
         let mut m = AdaptiveLinearModel {
-            freq: [0; SYMBOL_COUNT + 1],
-            freq_bits: bits,
-            freq_max: (1 << bits) - 1,
+            freq: vec![0; p.symbol_count + 1],
+            params: p,
         };
         for i in 1..m.freq.len() {
             m.freq[i] = i as u64;
         }
-        return Ok(m);
+        return Box::new(m);
     }
 
     fn update(&mut self, symbol: usize) {
-        if self.get_total_frequency() < self.freq_max {
+        if self.total_frequency() < self.params.freq_max {
             for i in symbol + 1..self.freq.len() {
                 self.freq[i] += 1;
             }
@@ -41,17 +36,17 @@ impl AdaptiveLinearModel {
 }
 
 impl Model for AdaptiveLinearModel {
-    fn get_frequency_bits(&self) -> usize {
-        self.freq_bits
+    fn parameters<'a>(&'a self) -> &'a Parameters {
+        &self.params
     }
 
-    fn get_total_frequency(&self) -> u64 {
-        self.freq[SYMBOL_COUNT]
+    fn total_frequency(&self) -> u64 {
+        self.freq[self.params.symbol_count]
     }
 
     fn get_frequency(&mut self, symbol: usize) -> Result<(u64, u64)> {
-        if symbol > SYMBOL_EOF {
-            Err(InvalidInput)
+        if symbol > self.params.symbol_eof {
+            Err(Error::InvalidInput)
         } else {
             let res = (self.freq[symbol], self.freq[symbol + 1]);
             self.update(symbol);
@@ -67,7 +62,7 @@ impl Model for AdaptiveLinearModel {
                 return Ok(res);
             }
         }
-        Err(InvalidInput)
+        Err(Error::InvalidInput)
     }
 }
 
