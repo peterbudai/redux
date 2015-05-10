@@ -7,3 +7,6 @@ authors = ["Péter Budai <buc@peterbudai.eu>"]
 name = "redux"
 doc = false
 
+[dev-dependencies]
+time = "0.1"
+

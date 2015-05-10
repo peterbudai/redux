@@ -32,6 +32,16 @@ impl fmt::Display for Error {
     }
 }
 
+impl fmt::Debug for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> result::Result<(), fmt::Error> {
+        match *self {
+            Error::Eof => f.write_str("Eof"),
+            Error::InvalidInput => f.write_str("InvalidInput"),
+            Error::IoError(ref e) => f.write_fmt(format_args!("IoError({:?})", e)),
+        }
+    } 
+}
+
 pub type Result<T> = result::Result<T, Error>;
 
 pub fn compress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
