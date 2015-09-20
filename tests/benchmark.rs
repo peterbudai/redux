@@ -7,6 +7,9 @@ use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
+use redux::model::Parameters;
+use redux::model::adaptive_linear::AdaptiveLinearModel;
+
 fn single_run(f: &Fn() -> redux::Result<(u64, u64)>) -> (u64, u64, f64) {
     let before = time::precise_time_s();
     let (a, b) = f().unwrap();
@@ -16,14 +19,18 @@ fn single_run(f: &Fn() -> redux::Result<(u64, u64)>) -> (u64, u64, f64) {
 
 fn single_codec(file: &Path, freq: &usize) {
     let (raw_len, comp_len1, comp_time) = single_run(&|| {
-        let mut infile = fs::File::open(file).unwrap();
-        let mut outfile = fs::File::create("compressed.redux").unwrap();
-        redux::compress(&mut infile, &mut outfile) 
+        let mut i = fs::File::open(file).unwrap();
+        let mut o = fs::File::create("compressed.redux").unwrap();
+        let p = Parameters::init(8, *freq, *freq + 2).unwrap();
+        let m = AdaptiveLinearModel::init(p);
+        return redux::compress_custom(&mut i, &mut o, m);
     });
     let (comp_len2, decomp_len, decomp_time) = single_run(&|| {
         let mut i = fs::File::open("compressed.redux").unwrap();
         let mut o = fs::File::create("decompressed.redux").unwrap();
-        redux::decompress(&mut i, &mut o)
+        let p = Parameters::init(8, *freq, *freq + 2).unwrap();
+        let m = AdaptiveLinearModel::init(p);
+        return redux::decompress_custom(&mut i, &mut o, m);
     });
     assert_eq!(raw_len, decomp_len);
     assert_eq!(comp_len1, comp_len2);

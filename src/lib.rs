@@ -45,7 +45,11 @@ impl fmt::Debug for Error {
 pub type Result<T> = result::Result<T, Error>;
 
 pub fn compress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
-    let mut codec = Codec::init(AdaptiveLinearModel::init(try!(Parameters::init(8, 14, 16))));
+    return compress_custom(istream, ostream, AdaptiveLinearModel::init(try!(Parameters::init(8, 14, 16))));
+}
+
+pub fn compress_custom(istream: &mut io::Read, ostream: &mut io::Write, model: Box<model::Model>) -> Result<(u64, u64)> {
+    let mut codec = Codec::init(model);
     let mut input = BitReader::create(istream);
     let mut output = BitWriter::create(ostream);
 
@@ -54,7 +58,11 @@ pub fn compress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64,
 }
 
 pub fn decompress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
-    let mut codec = Codec::init(AdaptiveLinearModel::init(try!(Parameters::init(8, 14, 16))));
+    return decompress_custom(istream, ostream, AdaptiveLinearModel::init(try!(Parameters::init(8, 14, 16))));
+}
+
+pub fn decompress_custom(istream: &mut io::Read, ostream: &mut io::Write, model: Box<model::Model>) -> Result<(u64, u64)> {
+    let mut codec = Codec::init(model);
     let mut input = BitReader::create(istream);
     let mut output = BitWriter::create(ostream);
 
