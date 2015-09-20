@@ -1,11 +1,13 @@
 //! Symbol frequency distribution models.
 
 mod adaptive_linear;
+mod adaptive_tree;
 
 use super::Error;
 use super::Result;
 
 pub use self::adaptive_linear::AdaptiveLinearModel;
+pub use self::adaptive_tree::AdaptiveTreeModel;
 
 /// Trait for the probability models behing arithmetic coding.
 /// Possible implementations may include static models with fixed probabilities
