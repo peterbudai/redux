@@ -1,3 +1,5 @@
+//! Model-independent compression and decompression module.
+
 use std::boxed::Box;
 use super::Error;
 use super::Result;
@@ -7,16 +9,25 @@ use super::bitio::ByteWrite;
 use super::bitio::BitWrite;
 use super::model::Model;
 
+/// The current state of the encoder and decoder.
 pub struct Codec {
+    /// The start of the active range.
     low: u64,
+    /// The end of the active range.
     high: u64,
+    /// Number of pending code bits to putput when encoding.
+    /// The current symbol value being decoded.
     pending: u64,
+    /// Number of trailing bits to output for unambigous encoding.
+    /// Number of leading bits to read when decoding.
     extra: usize,
+    /// The probability model being used.
     model: Box<Model>,
 }
 
 impl Codec {
-    pub fn init(m: Box<Model>) -> Codec {
+    /// Creates and initializes the codec for encoding or decoding.
+    pub fn new(m: Box<Model>) -> Codec {
         Codec {
             low: { m.parameters().code_min },
             high: { m.parameters().code_max },
@@ -26,6 +37,7 @@ impl Codec {
         }
     }
 
+    /// Outputs a bit and the preceeding pending bits, if any.
     fn put_bit(&mut self, bit: bool, output: &mut BitWrite) -> Result<()> {
         try!(output.write_bit(bit));
         while self.pending > 0 {
@@ -35,11 +47,13 @@ impl Codec {
         return Ok(());
     }
 
+    /// Inputs a bit.
     fn get_bit(&mut self, input: &mut BitRead) -> Result<()> {
         self.pending = (self.pending << 1) | if try!(input.read_bit()) { 1 } else { 0 };
         Ok(())
     }
 
+    /// Compresses a symbol and outputs some bits depending on the state of the codec.
     pub fn compress_symbol(&mut self, symbol: usize, output: &mut BitWrite) -> Result<()> {
         let count = self.model.total_frequency();
         let (low, high) = try!(self.model.get_frequency(symbol));
@@ -88,6 +102,7 @@ impl Codec {
         return Ok(());
     }
 
+    /// Compresses an entire byte stream outputting the EOF symbol and all bits for unambigous encoding.
     pub fn compress_bytes(&mut self, input: &mut ByteRead, output: &mut BitWrite) -> Result<()> {
         if { self.model.parameters().symbol_bits } != 8 {
             return Err(Error::InvalidInput)
@@ -110,6 +125,7 @@ impl Codec {
         return Ok(());
     }
 
+    /// Decompresses a symbol reading some bits until the symbol can be decoded.
     pub fn decompress_symbol(&mut self, input: &mut BitRead) -> Result<usize> {
         while self.extra > 0 {
             try!(self.get_bit(input));
@@ -150,6 +166,7 @@ impl Codec {
         return Ok(symbol);
     }
 
+    /// Decompresses a whole bit stream until the EOF symbol is found.
     pub fn decompress_bytes(&mut self, input: &mut BitRead, output: &mut ByteWrite) -> Result<()> {
         if { self.model.parameters().symbol_bits } != 8 {
             return Err(Error::InvalidInput)

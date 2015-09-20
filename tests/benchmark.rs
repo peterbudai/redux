@@ -9,13 +9,13 @@ use std::path::PathBuf;
 
 use redux::model::Parameters;
 use redux::model::Model;
-use redux::model::adaptive_linear::AdaptiveLinearModel;
+use redux::model::AdaptiveLinearModel;
 
 fn benchmark_func(codec: &Fn(&mut Read, &mut Write, Box<Model>) -> redux::Result<(u64, u64)>, 
                   ifile: &Path, ofile: &Path, model: &Fn(Parameters) -> Box<Model>, freq: &usize) -> (u64, u64, f64) {
     let mut i = fs::File::open(ifile).unwrap();
     let mut o = fs::File::create(ofile).unwrap();
-    let m = model(Parameters::init(8, *freq, *freq + 2).unwrap());
+    let m = model(Parameters::new(8, *freq, *freq + 2).unwrap());
 
     let before = time::precise_time_s();
     let (a, b) = codec(&mut i, &mut o, m).unwrap();
@@ -42,7 +42,7 @@ fn benchmark_path(p: &Path, tmpc: &Path, tmpd: &Path) {
     } else {
         println!(" File: {}", match p.to_str() { Some(s) => s, None => { panic!() }});
         for freq in [14usize, 22, 30].iter() {
-            benchmark_codec(p, tmpc, tmpd, &|p: Parameters| AdaptiveLinearModel::init(p), freq);
+            benchmark_codec(p, tmpc, tmpd, &|p: Parameters| AdaptiveLinearModel::new(p), freq);
         }
     }
 }

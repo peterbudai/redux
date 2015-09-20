@@ -1,3 +1,6 @@
+//! Adaptive arithmetic de/compression library.
+
+use std::boxed::Box;
 use std::io;
 use std::result;
 use std::fmt;
@@ -5,7 +8,7 @@ use self::codec::Codec;
 use self::bitio::BitReader;
 use self::bitio::BitWriter;
 use self::model::Parameters;
-use self::model::adaptive_linear::AdaptiveLinearModel;
+use self::model::AdaptiveLinearModel;
 
 pub mod bitio;
 pub mod codec;
@@ -39,32 +42,37 @@ impl fmt::Debug for Error {
             Error::InvalidInput => f.write_str("InvalidInput"),
             Error::IoError(ref e) => f.write_fmt(format_args!("IoError({:?})", e)),
         }
-    } 
+    }
 }
 
+/// Specialized `Result` type for the `redux` library.
 pub type Result<T> = result::Result<T, Error>;
 
+/// Compresses an entire byte stream using default paremeters.
 pub fn compress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
-    return compress_custom(istream, ostream, AdaptiveLinearModel::init(try!(Parameters::init(8, 14, 16))));
+    compress_custom(istream, ostream, AdaptiveLinearModel::new(try!(Parameters::new(8, 14, 16))))
 }
 
+/// Compresses an entire byte stream using the given model and parameters.
 pub fn compress_custom(istream: &mut io::Read, ostream: &mut io::Write, model: Box<model::Model>) -> Result<(u64, u64)> {
-    let mut codec = Codec::init(model);
-    let mut input = BitReader::create(istream);
-    let mut output = BitWriter::create(ostream);
+    let mut codec = Codec::new(model);
+    let mut input = BitReader::new(istream);
+    let mut output = BitWriter::new(ostream);
 
     try!(codec.compress_bytes(&mut input, &mut output));
     return Ok((input.get_count(), output.get_count()));
 }
 
+/// Decompresses an entire byte stream using default paremeters.
 pub fn decompress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
-    return decompress_custom(istream, ostream, AdaptiveLinearModel::init(try!(Parameters::init(8, 14, 16))));
+    decompress_custom(istream, ostream, AdaptiveLinearModel::new(try!(Parameters::new(8, 14, 16))))
 }
 
+/// Deompresses an entire byte stream using the given model and parameters.
 pub fn decompress_custom(istream: &mut io::Read, ostream: &mut io::Write, model: Box<model::Model>) -> Result<(u64, u64)> {
-    let mut codec = Codec::init(model);
-    let mut input = BitReader::create(istream);
-    let mut output = BitWriter::create(ostream);
+    let mut codec = Codec::new(model);
+    let mut input = BitReader::new(istream);
+    let mut output = BitWriter::new(ostream);
 
     try!(codec.decompress_bytes(&mut input, &mut output));
     return Ok((input.get_count(), output.get_count()));

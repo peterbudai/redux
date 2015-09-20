@@ -1,3 +1,5 @@
+//! Adaptive linear symbol frequency model.
+
 use std::boxed::Box;
 use std::vec::Vec;
 use super::Model;
@@ -8,14 +10,15 @@ use super::super::Error;
 /// Adaptive model that uses a simple array for cumulative freq
 /// and simple, but slow linear algorithms for operations.
 pub struct AdaptiveLinearModel {
-    /// Array of comulative frequencies
+    /// Array of comulative frequencies.
     freq: Vec<u64>,
-    /// Arithmetic parameters
+    /// Arithmetic parameters.
     params: Parameters,
 }
 
 impl AdaptiveLinearModel {
-    pub fn init(p: Parameters) -> Box<AdaptiveLinearModel> {
+    /// Initializes the model with the given parameters.
+    pub fn new(p: Parameters) -> Box<AdaptiveLinearModel> {
         let mut m = AdaptiveLinearModel {
             freq: vec![0; p.symbol_count + 1],
             params: p,
@@ -26,6 +29,7 @@ impl AdaptiveLinearModel {
         return Box::new(m);
     }
 
+    /// Updates the cumulative frequencies for the given symbol.
     fn update(&mut self, symbol: usize) {
         if self.total_frequency() < self.params.freq_max {
             for i in symbol + 1..self.freq.len() {
