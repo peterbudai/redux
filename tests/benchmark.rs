@@ -1,67 +1,59 @@
 extern crate redux;
 extern crate time;
 
-use std::env;
-use std::io;
+use std::io::Write;
+use std::io::Read;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
 
 use redux::model::Parameters;
+use redux::model::Model;
 use redux::model::adaptive_linear::AdaptiveLinearModel;
 
-fn single_run(f: &Fn() -> redux::Result<(u64, u64)>) -> (u64, u64, f64) {
+fn benchmark_func(codec: &Fn(&mut Read, &mut Write, Box<Model>) -> redux::Result<(u64, u64)>, 
+                  ifile: &Path, ofile: &Path, model: &Fn(Parameters) -> Box<Model>, freq: &usize) -> (u64, u64, f64) {
+    let mut i = fs::File::open(ifile).unwrap();
+    let mut o = fs::File::create(ofile).unwrap();
+    let m = model(Parameters::init(8, *freq, *freq + 2).unwrap());
+
     let before = time::precise_time_s();
-    let (a, b) = f().unwrap();
+    let (a, b) = codec(&mut i, &mut o, m).unwrap();
     let after = time::precise_time_s();
     (a, b, after - before)
 }
 
-fn single_codec(file: &Path, freq: &usize) {
-    let (raw_len, comp_len1, comp_time) = single_run(&|| {
-        let mut i = fs::File::open(file).unwrap();
-        let mut o = fs::File::create("compressed.redux").unwrap();
-        let p = Parameters::init(8, *freq, *freq + 2).unwrap();
-        let m = AdaptiveLinearModel::init(p);
-        return redux::compress_custom(&mut i, &mut o, m);
-    });
-    let (comp_len2, decomp_len, decomp_time) = single_run(&|| {
-        let mut i = fs::File::open("compressed.redux").unwrap();
-        let mut o = fs::File::create("decompressed.redux").unwrap();
-        let p = Parameters::init(8, *freq, *freq + 2).unwrap();
-        let m = AdaptiveLinearModel::init(p);
-        return redux::decompress_custom(&mut i, &mut o, m);
-    });
+fn benchmark_codec(file: &Path, tmpc: &Path, tmpd: &Path, model: &Fn(Parameters) -> Box<Model>, freq: &usize) {
+    let (raw_len, comp_len1, comp_time) = benchmark_func(&redux::compress_custom, file, tmpc, model, freq);
+    let (comp_len2, decomp_len, decomp_time) = benchmark_func(&redux::decompress_custom, tmpc, tmpd, model, freq);
     assert_eq!(raw_len, decomp_len);
     assert_eq!(comp_len1, comp_len2);
     let ratio = (raw_len as f64) / (comp_len1 as f64);
-    
-    println!("  Original: {} B, Compressed: {} B, Ratio: {:.3}, Compression: {:.3} s, Decompression: {:.3} s", raw_len, comp_len1, ratio, comp_time, decomp_time);
+
+    println!("  OrigSize: {} B, CompSize: {} B, Ratio: {:.3}, EncTime: {:.3} s, DecTime: {:.3} s", raw_len, comp_len1, ratio, comp_time, decomp_time);
 }
 
-fn single_file(file: &Path) {
-    println!(" File: {}", match file.to_str() { Some(s) => s, None => { panic!() }});
-    for freq in [14usize, 22, 30].iter() {
-        single_codec(file, freq);
-    }
-}
-
-fn recurse_files(p: &Path) {
+fn benchmark_path(p: &Path, tmpc: &Path, tmpd: &Path) {
     if fs::metadata(p).unwrap().is_dir() {
         println!("Directory: {}", match p.to_str() { Some(s) => s, None => { panic!() }});
         for d in fs::read_dir(p).unwrap() {
-            recurse_files(&d.unwrap().path());
+            benchmark_path(&d.unwrap().path(), tmpc, tmpd);
         }
     } else {
-        single_file(p);
+        println!(" File: {}", match p.to_str() { Some(s) => s, None => { panic!() }});
+        for freq in [14usize, 22, 30].iter() {
+            benchmark_codec(p, tmpc, tmpd, &|p: Parameters| AdaptiveLinearModel::init(p), freq);
+        }
     }
 }
 
 #[test]
-fn benchmark_files() {
-    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push("resources");
+fn run_benchmark() {
+    let mut indir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    indir.push("resources");
+    let cfile = Path::new("compressed.redux");
+    let dfile = Path::new("decompressed.redux");
 
-    recurse_files(d.as_path());
+    benchmark_path(indir.as_path(), cfile, dfile);
 }
 
