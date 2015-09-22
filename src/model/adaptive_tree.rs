@@ -106,7 +106,26 @@ impl Model for AdaptiveTreeModel {
     }
 
     fn get_symbol(&mut self, value: u64) -> Result<(usize, u64, u64)> {
-        Err(Error::InvalidInput)
+        let mut m = self.params.symbol_eof; 
+        let mut i = 0usize;
+        let mut v = value;
+        while (m > 0) && (i < self.params.symbol_eof) {
+            let t = i + m;
+            if v >= self.tree[t] {
+                i = t;
+                v -= self.tree[t];
+            }
+            m >>= 1;
+        }
+
+        if v > 0 { 
+            Err(Error::InvalidInput) 
+        } else {
+            match self.get_frequency(i) {
+                Ok((l, h)) => Ok((i, l, h)),
+                Err(e) => Err(e)
+            }
+        }
     }
 }
 

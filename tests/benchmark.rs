@@ -10,6 +10,7 @@ use std::path::PathBuf;
 use redux::model::Parameters;
 use redux::model::Model;
 use redux::model::AdaptiveLinearModel;
+use redux::model::AdaptiveTreeModel;
 
 fn benchmark_func(codec: &Fn(&mut Read, &mut Write, Box<Model>) -> redux::Result<(u64, u64)>, 
                   ifile: &Path, ofile: &Path, model: &Fn(Parameters) -> Box<Model>, freq: &usize) -> (u64, u64, f64) {
@@ -23,14 +24,14 @@ fn benchmark_func(codec: &Fn(&mut Read, &mut Write, Box<Model>) -> redux::Result
     (a, b, after - before)
 }
 
-fn benchmark_codec(file: &Path, tmpc: &Path, tmpd: &Path, model: &Fn(Parameters) -> Box<Model>, freq: &usize) {
+fn benchmark_codec(file: &Path, tmpc: &Path, tmpd: &Path, name: &str, model: &Fn(Parameters) -> Box<Model>, freq: &usize) {
     let (raw_len, comp_len1, comp_time) = benchmark_func(&redux::compress_custom, file, tmpc, model, freq);
     let (comp_len2, decomp_len, decomp_time) = benchmark_func(&redux::decompress_custom, tmpc, tmpd, model, freq);
     assert_eq!(raw_len, decomp_len);
     assert_eq!(comp_len1, comp_len2);
     let ratio = (raw_len as f64) / (comp_len1 as f64);
 
-    println!("  OrigSize: {} B, CompSize: {} B, Ratio: {:.3}, EncTime: {:.3} s, DecTime: {:.3} s", raw_len, comp_len1, ratio, comp_time, decomp_time);
+    println!(" Model: {}, Bits: {}, OrigSize: {} B, CompSize: {} B, Ratio: {:.3}, EncTime: {:.3} s, DecTime: {:.3} s", name, freq, raw_len, comp_len1, ratio, comp_time, decomp_time);
 }
 
 fn benchmark_path(p: &Path, tmpc: &Path, tmpd: &Path) {
@@ -42,7 +43,8 @@ fn benchmark_path(p: &Path, tmpc: &Path, tmpd: &Path) {
     } else {
         println!(" File: {}", match p.to_str() { Some(s) => s, None => { panic!() }});
         for freq in [14usize, 22, 30].iter() {
-            benchmark_codec(p, tmpc, tmpd, &|p: Parameters| AdaptiveLinearModel::new(p), freq);
+            benchmark_codec(p, tmpc, tmpd, "Linear", &|p: Parameters| AdaptiveLinearModel::new(p), freq);
+            benchmark_codec(p, tmpc, tmpd, "Tree", &|p: Parameters| AdaptiveTreeModel::new(p), freq);
         }
     }
 }
