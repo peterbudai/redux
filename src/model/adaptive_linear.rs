@@ -59,7 +59,7 @@ impl Model for AdaptiveLinearModel {
     }
 
     fn get_symbol(&mut self, value: u64) -> Result<(usize, u64, u64)> {
-        for i in 0..self.freq.len() {
+        for i in 0..self.freq.len()-1 {
             if value < self.freq[i + 1] {
                 let res = (i, self.freq[i], self.freq[i + 1]);
                 self.update(i);
@@ -67,6 +67,14 @@ impl Model for AdaptiveLinearModel {
             }
         }
         Err(Error::InvalidInput)
+    }
+
+    fn get_freq_table(&self) -> Vec<(u64, u64)> {
+        let mut res = vec![(0u64, 0u64); self.params.symbol_count];
+        for i in 0..self.params.symbol_count {
+            res[i] = (self.freq[i], self.freq[i+1]);
+        }
+        res
     }
 }
 

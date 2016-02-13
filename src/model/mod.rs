@@ -9,7 +9,7 @@ use super::Result;
 pub use self::adaptive_linear::AdaptiveLinearModel;
 pub use self::adaptive_tree::AdaptiveTreeModel;
 
-/// Trait for the probability models behing arithmetic coding.
+/// Trait for the probability models behind arithmetic coding.
 /// Possible implementations may include static models with fixed probabilities
 /// or and adaptive model that continuously updates cumulative frequencies.
 pub trait Model {
@@ -19,8 +19,10 @@ pub trait Model {
     fn total_frequency(&self) -> u64;
     /// Returns the cumulative frequency range for the given input symbol.
     fn get_frequency(&mut self, symbol: usize) -> Result<(u64, u64)>;
-    /// Returns the symbol that falls into the given cumulative frequency.
+    /// Returns the symbol that corresponds to the given cumulative frequency.
     fn get_symbol(&mut self, value: u64) -> Result<(usize, u64, u64)>;
+
+    fn get_freq_table(&self) -> Vec<(u64, u64)>;
 }
 
 /// Model parameters that specifies the common property of the models.

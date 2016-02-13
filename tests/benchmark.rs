@@ -31,7 +31,7 @@ fn benchmark_codec(file: &Path, tmpc: &Path, tmpd: &Path, name: &str, model: &Fn
     assert_eq!(comp_len1, comp_len2);
     let ratio = (raw_len as f64) / (comp_len1 as f64);
 
-    println!(" Model: {}, Bits: {}, OrigSize: {} B, CompSize: {} B, Ratio: {:.3}, EncTime: {:.3} s, DecTime: {:.3} s", name, freq, raw_len, comp_len1, ratio, comp_time, decomp_time);
+    println!("  Model: {}, Bits: {}, OrigSize: {} B, CompSize: {} B, Ratio: {:.3}, EncTime: {:.3} s, DecTime: {:.3} s", name, freq, raw_len, comp_len1, ratio, comp_time, decomp_time);
 }
 
 fn benchmark_path(p: &Path, tmpc: &Path, tmpd: &Path) {
