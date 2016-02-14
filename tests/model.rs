@@ -24,8 +24,8 @@ fn get_valid_symbol(bits: usize) -> usize {
 
 #[test]
 fn compare_models_encode() {
-    let mut linear = AdaptiveLinearModel::new(Parameters::new(4, 14, 16).unwrap());
-    let mut tree = AdaptiveTreeModel::new(Parameters::new(4, 14, 16).unwrap());
+    let mut linear = AdaptiveLinearModel::new(Parameters::new(8, 14, 16).unwrap());
+    let mut tree = AdaptiveTreeModel::new(Parameters::new(8, 14, 16).unwrap());
 
     println!("Encode test");
     for count in 0..10000 {
@@ -36,7 +36,7 @@ fn compare_models_encode() {
         let tf = tree.get_freq_table();
         print_freq_tables(&lf, &tf);
         assert_eq!(lf, tf);
-        let symbol = get_valid_symbol(4); 
+        let symbol = get_valid_symbol(8); 
         let (ll, lh) = linear.get_frequency(symbol).unwrap();
         let (tl, th) = tree.get_frequency(symbol).unwrap();
         println!("Iteration: {}, Symbol: {}, Linear: {}-{}, Tree: {}-{}", count, symbol, ll, lh, tl, th);
@@ -44,16 +44,16 @@ fn compare_models_encode() {
         assert_eq!(lh, th);
     }
 
-    assert!(!linear.get_frequency(get_invalid_symbol(4)).is_ok());
-    assert!(!linear.get_frequency(get_invalid_symbol(4) + 1).is_ok());
-    assert!(!tree.get_frequency(get_invalid_symbol(4)).is_ok());
-    assert!(!tree.get_frequency(get_invalid_symbol(4) + 1).is_ok());
+    assert!(!linear.get_frequency(get_invalid_symbol(8)).is_ok());
+    assert!(!linear.get_frequency(get_invalid_symbol(8) + 1).is_ok());
+    assert!(!tree.get_frequency(get_invalid_symbol(8)).is_ok());
+    assert!(!tree.get_frequency(get_invalid_symbol(8) + 1).is_ok());
 }
 
 #[test]
 fn compare_models_decode() {
-    let mut linear = AdaptiveLinearModel::new(Parameters::new(4, 14, 16).unwrap());
-    let mut tree = AdaptiveTreeModel::new(Parameters::new(4, 14, 16).unwrap());
+    let mut linear = AdaptiveLinearModel::new(Parameters::new(8, 14, 16).unwrap());
+    let mut tree = AdaptiveTreeModel::new(Parameters::new(8, 14, 16).unwrap());
 
     println!("Decode test");
     for count in 0..10000 {

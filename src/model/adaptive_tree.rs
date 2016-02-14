@@ -11,6 +11,9 @@ use super::super::Error;
 pub struct AdaptiveTreeModel {
     /// Tree of cumulative frequencies.
     tree: Vec<u64>,
+    /// Cache of total frequency, as is is needed quite often.
+    /// This could be otherwise calculated as `self.get_frequency_single(self.params.symbol_count)`.
+    count: u64,
     /// Arithmetic parameters.
     params: Parameters,
 }
@@ -33,6 +36,7 @@ impl AdaptiveTreeModel {
     pub fn new(p: Parameters) -> Box<AdaptiveTreeModel> {
         let mut m = AdaptiveTreeModel {
             tree: vec![0; p.symbol_count + 1],
+            count: p.symbol_count as u64,
             params: p,
         };
 
@@ -77,10 +81,13 @@ impl AdaptiveTreeModel {
 
     /// Updates the cumulative frequencies for the given symbol.
     fn update(&mut self, symbol: usize) {
-        let mut i = symbol;
-        while i <= self.params.symbol_count {
-            self.tree[i] += 1;
-            i += i.last_one();
+        if self.total_frequency() < self.params.freq_max {
+            let mut i = symbol;
+            while i <= self.params.symbol_count {
+                self.tree[i] += 1;
+                i += i.last_one();
+            }
+            self.count += 1;
         }
     }
 }
@@ -91,7 +98,8 @@ impl Model for AdaptiveTreeModel {
     }
 
     fn total_frequency(&self) -> u64 {
-        self.get_frequency_single(self.params.symbol_count)
+        debug_assert!(self.count == self.get_frequency_single(self.params.symbol_count));
+        self.count
     }
 
     fn get_frequency(&mut self, symbol: usize) -> Result<(u64, u64)> {
