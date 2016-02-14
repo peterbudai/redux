@@ -33,7 +33,7 @@ impl LastOne<usize> for usize {
 
 impl AdaptiveTreeModel {
     /// Initializes the model with the given parameters.
-    pub fn new(p: Parameters) -> Box<AdaptiveTreeModel> {
+    pub fn new(p: Parameters) -> Box<Model> {
         let mut m = AdaptiveTreeModel {
             tree: vec![0; p.symbol_count + 1],
             count: p.symbol_count as u64,

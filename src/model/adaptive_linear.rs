@@ -18,7 +18,7 @@ pub struct AdaptiveLinearModel {
 
 impl AdaptiveLinearModel {
     /// Initializes the model with the given parameters.
-    pub fn new(p: Parameters) -> Box<AdaptiveLinearModel> {
+    pub fn new(p: Parameters) -> Box<Model> {
         let mut m = AdaptiveLinearModel {
             freq: vec![0; p.symbol_count + 1],
             params: p,
