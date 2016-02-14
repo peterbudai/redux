@@ -69,6 +69,7 @@ impl Model for AdaptiveLinearModel {
         Err(Error::InvalidInput)
     }
 
+    #[cfg(debug_assertions)]
     fn get_freq_table(&self) -> Vec<(u64, u64)> {
         let mut res = vec![(0u64, 0u64); self.params.symbol_count];
         for i in 0..self.params.symbol_count {

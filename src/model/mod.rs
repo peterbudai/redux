@@ -21,7 +21,7 @@ pub trait Model {
     fn get_frequency(&mut self, symbol: usize) -> Result<(u64, u64)>;
     /// Returns the symbol that corresponds to the given cumulative frequency.
     fn get_symbol(&mut self, value: u64) -> Result<(usize, u64, u64)>;
-
+    #[cfg(debug_assertions)]
     fn get_freq_table(&self) -> Vec<(u64, u64)>;
 }
 
