@@ -26,6 +26,7 @@ pub trait Model {
 }
 
 /// Model parameters that specifies the common property of the models.
+#[derive(Clone)]
 pub struct Parameters {
     /// Bit width of the symbols being encoded.
     /// Usually 8 for byte oriented inputs.
@@ -76,4 +77,3 @@ impl Parameters {
         }
     }
 }
-
