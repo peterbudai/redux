@@ -1,9 +1,18 @@
 //! Bit level I/O operations.
 
+#[cfg(test)]
+mod tests;
+
 use std::io::Read;
 use std::io::Write;
 use super::Result;
 use super::Error::{Eof, IoError};
+
+/// A trait for counting the number of bytes flowing trough a `Read` or `Write` implementation.
+pub trait ByteCount {
+    /// Returns the number of bytes in this stream.
+    fn get_count(&self) -> u64;
+}
 
 /// A trait for object that allow writing one byte at a time.
 pub trait ByteWrite {
@@ -37,11 +46,6 @@ impl<'a> BitWriter<'a> {
         BitWriter { output: w, next: [0x00], mask: 0x80, count: 0 }
     }
 
-    /// Returns the number of bytes written to the output.
-    pub fn get_count(&self) -> u64 {
-        self.count
-    }
-
     /// Writes the next byte from the bit buffer to the output stream.
     fn write_next(&mut self) -> Result<()> {
         match self.output.write_all(&self.next) {
@@ -49,6 +53,14 @@ impl<'a> BitWriter<'a> {
             Err(e) => Err(IoError(e)),
         }
     }
+}
+
+impl<'a> ByteCount for BitWriter<'a> {
+    /// Returns the number of bytes written to the output.
+    fn get_count(&self) -> u64 {
+        self.count
+    }
+
 }
 
 impl<'a> ByteWrite for BitWriter<'a> {
@@ -115,11 +127,6 @@ impl<'a> BitReader<'a> {
         BitReader { input: r, next: [0x00], mask: 0x00, count: 0 }
     }
 
-    /// Returns the number of bytes read from the input.
-    pub fn get_count(&self) -> u64 {
-        self.count
-    }
-
     /// Reads the next byte from the input stream to the bit buffer.
     fn read_next(&mut self) -> Result<()> {
         match self.input.read(&mut self.next) {
@@ -128,6 +135,14 @@ impl<'a> BitReader<'a> {
             Err(e) => Err(IoError(e)),
         }
     }
+}
+
+impl<'a> ByteCount for BitReader<'a> {
+    /// Returns the number of bytes written to the output.
+    fn get_count(&self) -> u64 {
+        self.count
+    }
+
 }
 
 impl<'a> ByteRead for BitReader<'a> {

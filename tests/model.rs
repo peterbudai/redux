@@ -14,25 +14,6 @@ macro_rules! debug_println {
     )
 }
 
-struct Config(usize, usize, usize, usize);
-
-const CONFIGS: [Config; 14] = [
-    Config(4, 10, 16, 10000),
-    Config(4, 14, 16, 10000),
-    Config(4, 22, 24, 100000),
-    Config(4, 24, 30, 100000),
-    Config(4, 30, 32, 200000),
-    Config(8, 10, 16, 10000),
-    Config(8, 14, 16, 50000),
-    Config(8, 22, 24, 100000),
-    Config(8, 24, 30, 100000),
-    Config(8, 30, 32, 200000),
-    Config(12, 14, 16, 10000),
-    Config(12, 22, 24, 100000),
-    Config(12, 24, 30, 200000),
-    Config(12, 30, 32, 400000),
-];
-
 fn get_invalid_symbol(bits: usize) -> usize {
     (1usize << bits) + 1usize
 }
@@ -60,11 +41,6 @@ fn compare_freq_tables(linear: &Model, tree: &Model) {
     compare_freq_total(linear, tree);
     let lf = linear.get_freq_table();
     let tf = tree.get_freq_table();
-    for i in 0..lf.len() {
-        let (ll, lh) = lf[i];
-        let (tl, th) = tf[i];
-        println!("      Symbol: {} -> Linear: {}-{}, Tree: {}-{}, Match: {}", i, ll, lh, tl, th, if ll == tl && lh == th { "Yes" } else { "No" });
-    }
     assert_eq!(lf, tf);
 }
 
@@ -73,14 +49,14 @@ fn compare_freq_tables(linear: &Model, tree: &Model) {
     compare_freq_total(linear, tree);
 }
 
-fn compare_models_encode_single(config: &Config) {
-    let mut linear = AdaptiveLinearModel::new(Parameters::new(config.0, config.1, config.2).unwrap());
-    let mut tree = AdaptiveTreeModel::new(Parameters::new(config.0, config.1, config.2).unwrap());
+fn compare_models_encode_single(bits: usize, freq: usize, code: usize, iter: usize) {
+    let mut linear = AdaptiveLinearModel::new(Parameters::new(bits, freq, code).unwrap());
+    let mut tree = AdaptiveTreeModel::new(Parameters::new(bits, freq, code).unwrap());
 
-    println!("  Operation: Encode, Symbol: {} bits, Freq: {} bits, Code: {} bits, Iterations: {}", config.0, config.1, config.2, config.3);
-    for count in 0..config.3 {
+    println!("  Operation: Encode, Symbol: {} bits, Freq: {} bits, Code: {} bits, Iterations: {}", bits, freq, code, iter);
+    for count in 0..iter {
         compare_freq_tables(&*linear, &*tree);
-        let symbol = get_valid_symbol(config.0); 
+        let symbol = get_valid_symbol(bits); 
         let (ll, lh) = linear.get_frequency(symbol).unwrap();
         let (tl, th) = tree.get_frequency(symbol).unwrap();
         debug_println!("    Iteration: {}, Symbol: {}, Linear: {}-{}, Tree: {}-{}", count, symbol, ll, lh, tl, th);
@@ -88,19 +64,19 @@ fn compare_models_encode_single(config: &Config) {
         assert_eq!(lh, th);
     }
 
-    let symbol = get_invalid_symbol(config.0);
+    let symbol = get_invalid_symbol(bits);
     assert!(!linear.get_frequency(symbol).is_ok());
     assert!(!linear.get_frequency(symbol + 1).is_ok());
     assert!(!tree.get_frequency(symbol).is_ok());
     assert!(!tree.get_frequency(symbol).is_ok());
 }
 
-fn compare_models_decode_single(config: &Config) {
-    let mut linear = AdaptiveLinearModel::new(Parameters::new(config.0, config.1, config.2).unwrap());
-    let mut tree = AdaptiveTreeModel::new(Parameters::new(config.0, config.1, config.2).unwrap());
+fn compare_models_decode_single(bits: usize, freq: usize, code: usize, iter: usize) {
+    let mut linear = AdaptiveLinearModel::new(Parameters::new(bits, freq, code).unwrap());
+    let mut tree = AdaptiveTreeModel::new(Parameters::new(bits, freq, code).unwrap());
 
-    println!("  Operation: Decode, Symbol: {} bits, Freq: {} bits, Code: {} bits, Iterations: {}", config.0, config.1, config.2, config.3);
-    for count in 0..config.3 {
+    println!("  Operation: Decode, Symbol: {} bits, Freq: {} bits, Code: {} bits, Iterations: {}", bits, freq, code, iter);
+    for count in 0..iter {
         compare_freq_tables(&*linear, &*tree);
         let value = get_valid_value(&*linear);
         let (ls, ll, lh) = linear.get_symbol(value).unwrap();
@@ -119,15 +95,159 @@ fn compare_models_decode_single(config: &Config) {
 }
 
 #[test]
-fn compare_models_encode_all() {
-    for config in CONFIGS.iter() {
-        compare_models_encode_single(&*config);
-    }
+fn compare_models_encode_4_10_16() {
+    compare_models_encode_single(4, 10, 16, 10000);
 }
 
 #[test]
-fn compare_models_decode_all() {
-    for config in CONFIGS.iter() {
-        compare_models_decode_single(&*config);
-    }
+fn compare_models_encode_4_14_16() {
+    compare_models_encode_single(4, 14, 16, 10000);
+}
+
+#[test]
+fn compare_models_encode_4_22_24() {
+    compare_models_encode_single(4, 22, 24, 100000);
+}
+
+#[test]
+fn compare_models_encode_4_24_30() {
+    compare_models_encode_single(4, 24, 30, 100000);
+}
+
+#[test]
+fn compare_models_encode_4_30_32() {
+    compare_models_encode_single(4, 30, 32, 200000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_encode_8_10_16() {
+    compare_models_encode_single(8, 10, 16, 10000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_encode_8_14_16() {
+    compare_models_encode_single(8, 14, 16, 10000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_encode_8_22_24() {
+    compare_models_encode_single(8, 22, 24, 100000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_encode_8_24_30() {
+    compare_models_encode_single(8, 24, 30, 100000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_encode_8_30_32() {
+    compare_models_encode_single(8, 30, 32, 200000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_encode_12_14_16() {
+    compare_models_encode_single(12, 14, 16, 10000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_encode_12_22_24() {
+    compare_models_encode_single(12, 22, 24, 100000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_encode_12_24_30() {
+    compare_models_encode_single(12, 24, 30, 100000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_encode_12_30_32() {
+    compare_models_encode_single(12, 30, 32, 200000);
+}
+
+#[test]
+fn compare_models_decode_4_10_16() {
+    compare_models_decode_single(4, 10, 16, 10000);
+}
+
+#[test]
+fn compare_models_decode_4_14_16() {
+    compare_models_decode_single(4, 14, 16, 10000);
+}
+
+#[test]
+fn compare_models_decode_4_22_24() {
+    compare_models_decode_single(4, 22, 24, 100000);
+}
+
+#[test]
+fn compare_models_decode_4_24_30() {
+    compare_models_decode_single(4, 24, 30, 100000);
+}
+
+#[test]
+fn compare_models_decode_4_30_32() {
+    compare_models_decode_single(4, 30, 32, 200000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_decode_8_10_16() {
+    compare_models_decode_single(8, 10, 16, 10000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_decode_8_14_16() {
+    compare_models_decode_single(8, 14, 16, 10000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_decode_8_22_24() {
+    compare_models_decode_single(8, 22, 24, 100000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_decode_8_24_30() {
+    compare_models_decode_single(8, 24, 30, 100000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_decode_8_30_32() {
+    compare_models_decode_single(8, 30, 32, 200000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_decode_12_14_16() {
+    compare_models_decode_single(12, 14, 16, 10000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_decode_12_22_24() {
+    compare_models_decode_single(12, 22, 24, 100000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_decode_12_24_30() {
+    compare_models_decode_single(12, 24, 30, 100000);
+}
+
+#[test]
+#[ignore]
+fn compare_models_decode_12_30_32() {
+    compare_models_decode_single(12, 30, 32, 200000);
 }

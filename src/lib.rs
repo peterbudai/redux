@@ -5,10 +5,9 @@ use std::io;
 use std::result;
 use std::fmt;
 use self::codec::Codec;
+use self::bitio::ByteCount;
 use self::bitio::BitReader;
 use self::bitio::BitWriter;
-use self::model::Parameters;
-use self::model::AdaptiveLinearModel;
 
 pub mod bitio;
 pub mod codec;
@@ -45,16 +44,22 @@ impl fmt::Debug for Error {
     }
 }
 
+#[cfg(test)]
+impl PartialEq<Error> for Error {
+    fn eq(&self, other: &Error) -> bool {
+       match *self {
+           Error::Eof => match *other { Error::Eof => true, _ => false },
+           Error::InvalidInput => match *other { Error::InvalidInput => true, _ => false },
+           Error::IoError(_)  => match *other { Error::IoError(_) => true, _ => false },
+       }
+    }
+}
+
 /// Specialized `Result` type for the `redux` library.
 pub type Result<T> = result::Result<T, Error>;
 
-/// Compresses an entire byte stream using default paremeters.
-pub fn compress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
-    compress_custom(istream, ostream, AdaptiveLinearModel::new(try!(Parameters::new(8, 14, 16))))
-}
-
 /// Compresses an entire byte stream using the given model and parameters.
-pub fn compress_custom(istream: &mut io::Read, ostream: &mut io::Write, model: Box<model::Model>) -> Result<(u64, u64)> {
+pub fn compress(istream: &mut io::Read, ostream: &mut io::Write, model: Box<model::Model>) -> Result<(u64, u64)> {
     let mut codec = Codec::new(model);
     let mut input = BitReader::new(istream);
     let mut output = BitWriter::new(ostream);
@@ -63,13 +68,8 @@ pub fn compress_custom(istream: &mut io::Read, ostream: &mut io::Write, model: B
     return Ok((input.get_count(), output.get_count()));
 }
 
-/// Decompresses an entire byte stream using default paremeters.
-pub fn decompress(istream: &mut io::Read, ostream: &mut io::Write) -> Result<(u64, u64)> {
-    decompress_custom(istream, ostream, AdaptiveLinearModel::new(try!(Parameters::new(8, 14, 16))))
-}
-
 /// Deompresses an entire byte stream using the given model and parameters.
-pub fn decompress_custom(istream: &mut io::Read, ostream: &mut io::Write, model: Box<model::Model>) -> Result<(u64, u64)> {
+pub fn decompress(istream: &mut io::Read, ostream: &mut io::Write, model: Box<model::Model>) -> Result<(u64, u64)> {
     let mut codec = Codec::new(model);
     let mut input = BitReader::new(istream);
     let mut output = BitWriter::new(ostream);
@@ -78,3 +78,22 @@ pub fn decompress_custom(istream: &mut io::Read, ostream: &mut io::Write, model:
     return Ok((input.get_count(), output.get_count()));
 }
 
+#[cfg(test)]
+mod tests {
+    use super::Error::*;
+    use std::io;
+    
+    macro_rules! assert_ne {
+        ($a:expr, $b:expr) => ($a != $b)
+    }
+
+    #[test]
+    fn test_error_eq() {
+        assert_eq!(Eof, Eof);
+        assert_eq!(InvalidInput, InvalidInput);
+        assert_eq!(IoError(io::Error::new(io::ErrorKind::Other, "Other")), IoError(io::Error::new(io::ErrorKind::NotFound, "NotFound")));
+        assert_ne!(Eof, InvalidInput);
+        assert_ne!(InvalidInput, IoError(io::Error::new(io::ErrorKind::Other, "Other")));
+        assert_ne!(IoError(io::Error::new(io::ErrorKind::NotFound, "NotFound")), Eof);
+    }
+}
