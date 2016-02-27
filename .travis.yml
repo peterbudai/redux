@@ -1,4 +1,7 @@
 language: rust
+branches:
+    only:
+        - master
 script:
     - cargo build --verbose
-    - cargo test --release -- --nocapture
+    - cargo test --verbose --release
