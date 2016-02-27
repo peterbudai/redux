@@ -13,5 +13,6 @@ Links
 -----
 
 * [Website](https://peterbudai.github.io/redux)
+* [Documentation](https://peterbudai.github.io/redux/doc/redux/index.html)
 * [Licence](LICENSE.md)
 
