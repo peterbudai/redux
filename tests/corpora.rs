@@ -85,175 +85,175 @@ fn test_model(corpus: &str, name: &str, model: fn(Parameters) -> Box<Model>, bit
 }
 
 #[test]
-fn test_artificial_linear14() {
+fn artificial_linear14() {
     test_model("artificial", "Linear", AdaptiveLinearModel::new, 14usize);
 }
 
 #[test]
-fn test_artificial_linear22() {
+fn artificial_linear22() {
     test_model("artificial", "Linear", AdaptiveLinearModel::new, 22usize);
 }
 
 #[test]
-fn test_artificial_linear30() {
+fn artificial_linear30() {
     test_model("artificial", "Linear", AdaptiveLinearModel::new, 30usize);
 }
 
 #[test]
-fn test_artificial_tree14() {
+fn artificial_tree14() {
     test_model("artificial", "Tree", AdaptiveTreeModel::new, 14usize);
 }
 
 #[test]
-fn test_artificial_tree22() {
+fn artificial_tree22() {
     test_model("artificial", "Tree", AdaptiveTreeModel::new, 22usize);
 }
 
 #[test]
-fn test_artificial_tree30() {
+fn artificial_tree30() {
     test_model("artificial", "Tree", AdaptiveTreeModel::new, 30usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_calgary_linear14() {
+fn calgary_linear14() {
     test_model("calgary", "Linear", AdaptiveLinearModel::new, 14usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_calgary_linear22() {
+fn calgary_linear22() {
     test_model("calgary", "Linear", AdaptiveLinearModel::new, 22usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_calgary_linear30() {
+fn calgary_linear30() {
     test_model("calgary", "Linear", AdaptiveLinearModel::new, 30usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_calgary_tree14() {
+fn calgary_tree14() {
     test_model("calgary", "Tree", AdaptiveTreeModel::new, 14usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_calgary_tree22() {
+fn calgary_tree22() {
     test_model("calgary", "Tree", AdaptiveTreeModel::new, 22usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_calgary_tree30() {
+fn calgary_tree30() {
     test_model("calgary", "Tree", AdaptiveTreeModel::new, 30usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_canterbury_linear14() {
+fn canterbury_linear14() {
     test_model("canterbury", "Linear", AdaptiveLinearModel::new, 14usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_canterbury_linear22() {
+fn canterbury_linear22() {
     test_model("canterbury", "Linear", AdaptiveLinearModel::new, 22usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_canterbury_linear30() {
+fn canterbury_linear30() {
     test_model("canterbury", "Linear", AdaptiveLinearModel::new, 30usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_canterbury_tree14() {
+fn canterbury_tree14() {
     test_model("canterbury", "Tree", AdaptiveTreeModel::new, 14usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_canterbury_tree22() {
+fn canterbury_tree22() {
     test_model("canterbury", "Tree", AdaptiveTreeModel::new, 22usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_canterbury_tree30() {
+fn canterbury_tree30() {
     test_model("canterbury", "Tree", AdaptiveTreeModel::new, 30usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_large_linear14() {
+fn large_linear14() {
     test_model("large", "Linear", AdaptiveLinearModel::new, 14usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_large_linear22() {
+fn large_linear22() {
     test_model("large", "Linear", AdaptiveLinearModel::new, 22usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_large_linear30() {
+fn large_linear30() {
     test_model("large", "Linear", AdaptiveLinearModel::new, 30usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_large_tree14() {
+fn large_tree14() {
     test_model("large", "Tree", AdaptiveTreeModel::new, 14usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_large_tree22() {
+fn large_tree22() {
     test_model("large", "Tree", AdaptiveTreeModel::new, 22usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_large_tree30() {
+fn large_tree30() {
     test_model("large", "Tree", AdaptiveTreeModel::new, 30usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_misc_linear14() {
+fn misc_linear14() {
     test_model("misc", "Linear", AdaptiveLinearModel::new, 14usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_misc_linear22() {
+fn misc_linear22() {
     test_model("misc", "Linear", AdaptiveLinearModel::new, 22usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_misc_linear30() {
+fn misc_linear30() {
     test_model("misc", "Linear", AdaptiveLinearModel::new, 30usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_misc_tree14() {
+fn misc_tree14() {
     test_model("misc", "Tree", AdaptiveTreeModel::new, 14usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_misc_tree22() {
+fn misc_tree22() {
     test_model("misc", "Tree", AdaptiveTreeModel::new, 22usize);
 }
 
 #[test]
 #[cfg_attr(debug_assertions, ignore)]
-fn test_misc_tree30() {
+fn misc_tree30() {
     test_model("misc", "Tree", AdaptiveTreeModel::new, 30usize);
 }

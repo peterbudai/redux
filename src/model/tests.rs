@@ -1,10 +1,8 @@
-extern crate redux;
+#![cfg(test)]
+
 extern crate rand;
 
-use redux::model::Parameters;
-use redux::model::Model;
-use redux::model::AdaptiveLinearModel;
-use redux::model::AdaptiveTreeModel;
+use super::*;
 
 macro_rules! debug_println {
     ($($arg:tt)*) => (
@@ -56,7 +54,7 @@ fn compare_models_encode_single(bits: usize, freq: usize, code: usize, iter: usi
     println!("  Operation: Encode, Symbol: {} bits, Freq: {} bits, Code: {} bits, Iterations: {}", bits, freq, code, iter);
     for count in 0..iter {
         compare_freq_tables(&*linear, &*tree);
-        let symbol = get_valid_symbol(bits); 
+        let symbol = get_valid_symbol(bits);
         let (ll, lh) = linear.get_frequency(symbol).unwrap();
         let (tl, th) = tree.get_frequency(symbol).unwrap();
         debug_println!("    Iteration: {}, Symbol: {}, Linear: {}-{}, Tree: {}-{}", count, symbol, ll, lh, tl, th);

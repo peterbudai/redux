@@ -1,7 +1,14 @@
 [package]
 name = "redux"
-version = "0.1.0"
+version = "0.1.0-rc1"
 authors = ["Péter Budai <buc@peterbudai.eu>"]
+description = "Adaptive arithmetic compression library written in Rust"
+keywords = ["compression", "arithmetic", "coding", "adaptive"]
+homepage = "https://peterbudai.github.io/redux/"
+documentation = "https://peterbudai.github.io/redux/doc/redux/"
+repository = "https://github.com/peterbudai/redux/"
+readme = "README.md"
+license = "MIT"
 
 [[bin]]
 name = "redux"

@@ -17,8 +17,7 @@ pub mod model;
 pub enum Error {
     /// The input stream has ended (unexpectedly)
     Eof,
-    /// An invalid combination of data has occured on the input that
-    /// the library was unable to process.
+    /// An invalid combination of data has occured on the input that the library was unable to process.
     InvalidInput,
     /// An I/O error occured.
     IoError(io::Error),

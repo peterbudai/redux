@@ -2,6 +2,8 @@
 
 mod adaptive_linear;
 mod adaptive_tree;
+#[cfg(test)]
+mod tests;
 
 use super::Error;
 use super::Result;
