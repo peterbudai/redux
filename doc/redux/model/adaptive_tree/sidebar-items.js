@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["AdaptiveTreeModel","Adaptive model that uses a Binary Indexed Tree for storing cumulative frequencies."]]});

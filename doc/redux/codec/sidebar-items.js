@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Codec","The current state of the encoder and decoder."]]});
