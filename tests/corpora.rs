@@ -29,19 +29,6 @@ macro_rules! speed {
     ($d:expr, $t:expr) => ($d as f64 / $t / 1024f64 / 1024f64)
 }
 
-fn collect_files() -> Vec<PathBuf> {
-    let mut dirs = vec![PathBuf::from(env!("CARGO_MANIFEST_DIR"))];
-    dirs[0].push("resources");
-    let mut files = Vec::<PathBuf>::new();
-    while !dirs.is_empty() {
-        for entry in fs::read_dir(dirs.pop().unwrap()).unwrap() {
-            let path = entry.unwrap().path();
-            if fs::metadata(&path).unwrap().is_dir() { &mut dirs } else { &mut files }.push(path);
-        }
-    }
-    files
-}
-
 fn test_operation(model: fn(Parameters) -> Box<Model>, bits: usize, 
                  codec: fn(&mut Read, &mut Write, Box<Model>) -> redux::Result<(u64, u64)>,
                  input: &Vec<u8>, output: &mut Vec<u8>) -> f64 {
@@ -77,55 +64,196 @@ fn test_file(model: fn(Parameters) -> Box<Model>, bits: usize, file: &Path) -> (
     (dlen as u64, clen as u64, ctime, dtime)
 }
 
-fn test_model(name: &str, model: fn(Parameters) -> Box<Model>, bits: usize) {
-    debug_println!("  Model: {}, Bits: {}", name, bits);
+fn test_model(corpus: &str, name: &str, model: fn(Parameters) -> Box<Model>, bits: usize) {
+    debug_println!("  Corpus: {}, Model: {}, Bits: {}", corpus, name, bits);
+    let mut dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    dir.push("resources");
+    dir.push(corpus);
+
     let mut dlen = 0u64;
     let mut clen = 0u64;
     let mut ctime = 0f64;
     let mut dtime = 0f64;
-    for file in collect_files() {
+    for file in fs::read_dir(dir).unwrap().map(|entry| entry.unwrap().path()) {
         let (d, c, ct, dt) = test_file(model, bits, &file);
         dlen += d;
         clen += c;
         ctime += ct;
         dtime += dt;
     }
-    println!("  Model: {}, Bits: {}, AvgRatio: {:.3}, AvgEncSpeed: {:.2} MiB/s, AvgDecSpeed: {:.2} MiB/s", name, bits, ratio!(dlen, clen), speed!(dlen, ctime), speed!(dlen, dtime));
+    println!("  Corpus: {}, Model: {}, Bits: {}, AvgRatio: {:.3}, AvgEncSpeed: {:.2} MiB/s, AvgDecSpeed: {:.2} MiB/s", corpus, name, bits, ratio!(dlen, clen), speed!(dlen, ctime), speed!(dlen, dtime));
 }
 
 #[test]
-#[ignore]
-fn test_linear14() {
-    test_model("Linear", AdaptiveLinearModel::new, 14usize);
+fn test_artificial_linear14() {
+    test_model("artificial", "Linear", AdaptiveLinearModel::new, 14usize);
 }
 
 #[test]
-#[ignore]
-fn test_linear22() {
-    test_model("Linear", AdaptiveLinearModel::new, 22usize);
+fn test_artificial_linear22() {
+    test_model("artificial", "Linear", AdaptiveLinearModel::new, 22usize);
 }
 
 #[test]
-#[ignore]
-fn test_linear30() {
-    test_model("Linear", AdaptiveLinearModel::new, 30usize);
+fn test_artificial_linear30() {
+    test_model("artificial", "Linear", AdaptiveLinearModel::new, 30usize);
 }
 
 #[test]
-#[ignore]
-fn test_tree14() {
-    test_model("Tree", AdaptiveTreeModel::new, 14usize);
+fn test_artificial_tree14() {
+    test_model("artificial", "Tree", AdaptiveTreeModel::new, 14usize);
 }
 
 #[test]
-#[ignore]
-fn test_tree22() {
-    test_model("Tree", AdaptiveTreeModel::new, 22usize);
+fn test_artificial_tree22() {
+    test_model("artificial", "Tree", AdaptiveTreeModel::new, 22usize);
 }
 
 #[test]
-#[ignore]
-fn test_tree30() {
-    test_model("Tree", AdaptiveTreeModel::new, 30usize);
+fn test_artificial_tree30() {
+    test_model("artificial", "Tree", AdaptiveTreeModel::new, 30usize);
 }
 
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_calgary_linear14() {
+    test_model("calgary", "Linear", AdaptiveLinearModel::new, 14usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_calgary_linear22() {
+    test_model("calgary", "Linear", AdaptiveLinearModel::new, 22usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_calgary_linear30() {
+    test_model("calgary", "Linear", AdaptiveLinearModel::new, 30usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_calgary_tree14() {
+    test_model("calgary", "Tree", AdaptiveTreeModel::new, 14usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_calgary_tree22() {
+    test_model("calgary", "Tree", AdaptiveTreeModel::new, 22usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_calgary_tree30() {
+    test_model("calgary", "Tree", AdaptiveTreeModel::new, 30usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_canterbury_linear14() {
+    test_model("canterbury", "Linear", AdaptiveLinearModel::new, 14usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_canterbury_linear22() {
+    test_model("canterbury", "Linear", AdaptiveLinearModel::new, 22usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_canterbury_linear30() {
+    test_model("canterbury", "Linear", AdaptiveLinearModel::new, 30usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_canterbury_tree14() {
+    test_model("canterbury", "Tree", AdaptiveTreeModel::new, 14usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_canterbury_tree22() {
+    test_model("canterbury", "Tree", AdaptiveTreeModel::new, 22usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_canterbury_tree30() {
+    test_model("canterbury", "Tree", AdaptiveTreeModel::new, 30usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_large_linear14() {
+    test_model("large", "Linear", AdaptiveLinearModel::new, 14usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_large_linear22() {
+    test_model("large", "Linear", AdaptiveLinearModel::new, 22usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_large_linear30() {
+    test_model("large", "Linear", AdaptiveLinearModel::new, 30usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_large_tree14() {
+    test_model("large", "Tree", AdaptiveTreeModel::new, 14usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_large_tree22() {
+    test_model("large", "Tree", AdaptiveTreeModel::new, 22usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_large_tree30() {
+    test_model("large", "Tree", AdaptiveTreeModel::new, 30usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_misc_linear14() {
+    test_model("misc", "Linear", AdaptiveLinearModel::new, 14usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_misc_linear22() {
+    test_model("misc", "Linear", AdaptiveLinearModel::new, 22usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_misc_linear30() {
+    test_model("misc", "Linear", AdaptiveLinearModel::new, 30usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_misc_tree14() {
+    test_model("misc", "Tree", AdaptiveTreeModel::new, 14usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_misc_tree22() {
+    test_model("misc", "Tree", AdaptiveTreeModel::new, 22usize);
+}
+
+#[test]
+#[cfg_attr(debug_assertions, ignore)]
+fn test_misc_tree30() {
+    test_model("misc", "Tree", AdaptiveTreeModel::new, 30usize);
+}

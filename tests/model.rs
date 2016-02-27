@@ -120,55 +120,55 @@ fn compare_models_encode_4_30_32() {
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_encode_8_10_16() {
     compare_models_encode_single(8, 10, 16, 10000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_encode_8_14_16() {
     compare_models_encode_single(8, 14, 16, 10000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_encode_8_22_24() {
     compare_models_encode_single(8, 22, 24, 100000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_encode_8_24_30() {
     compare_models_encode_single(8, 24, 30, 100000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_encode_8_30_32() {
     compare_models_encode_single(8, 30, 32, 200000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_encode_12_14_16() {
     compare_models_encode_single(12, 14, 16, 10000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_encode_12_22_24() {
     compare_models_encode_single(12, 22, 24, 100000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_encode_12_24_30() {
     compare_models_encode_single(12, 24, 30, 100000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_encode_12_30_32() {
     compare_models_encode_single(12, 30, 32, 200000);
 }
@@ -199,55 +199,55 @@ fn compare_models_decode_4_30_32() {
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_decode_8_10_16() {
     compare_models_decode_single(8, 10, 16, 10000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_decode_8_14_16() {
     compare_models_decode_single(8, 14, 16, 10000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_decode_8_22_24() {
     compare_models_decode_single(8, 22, 24, 100000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_decode_8_24_30() {
     compare_models_decode_single(8, 24, 30, 100000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_decode_8_30_32() {
     compare_models_decode_single(8, 30, 32, 200000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_decode_12_14_16() {
     compare_models_decode_single(12, 14, 16, 10000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_decode_12_22_24() {
     compare_models_decode_single(12, 22, 24, 100000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_decode_12_24_30() {
     compare_models_decode_single(12, 24, 30, 100000);
 }
 
 #[test]
-#[ignore]
+#[cfg_attr(debug_assertions, ignore)]
 fn compare_models_decode_12_30_32() {
     compare_models_decode_single(12, 30, 32, 200000);
 }
