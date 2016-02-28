@@ -143,8 +143,84 @@
 <span id="100">100</span>
 <span id="101">101</span>
 <span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Adaptive arithmetic compression library.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! This crate provides standard [arithmetic coding](https://en.wikipedia.org/wiki/Arithmetic_coding) </span>
+<span class='doccomment'>//! implementation that can use customized symbol probability models.</span>
+<span class='doccomment'>//! This crate offers two adaptive models: `AdaptiveLinearModel` and `AdaptiveTreeModel`. Adaptive </span>
+<span class='doccomment'>//! models continuously update the symbol probability distribution with each encoded symbol.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! * `AdaptiveLinearModel` is a straightforward, but slow implementation, present mainly for</span>
+<span class='doccomment'>//! tasting and benchmarking purposes.</span>
+<span class='doccomment'>//! </span>
+<span class='doccomment'>//! * `AdaptiveTreeModel` is a [Fenwick tree](https://en.wikipedia.org/wiki/Fenwick_tree)-based</span>
+<span class='doccomment'>//! implementation, it is advised to use this model for any uses.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! It is possible to use a custom model (it may or may not be adaptive) by implementing the </span>
+<span class='doccomment'>//! `model::Model` trait.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! # Examples</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! Any byte stream can be encoded and decoded that implements the `std::io::Read` trait, and the</span>
+<span class='doccomment'>//! output can be anything that implements `std::io::Write` trait. Thus, it is possible to process</span>
+<span class='doccomment'>//! files or memory objects as well.</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! ```rust</span>
+<span class='doccomment'>//! use redux::model::*;</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! let data = vec![114u8, 101u8, 100u8, 117u8, 120u8];</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! // Encode</span>
+<span class='doccomment'>//! let mut cursor1 = std::io::Cursor::new(&amp;data);</span>
+<span class='doccomment'>//! let mut compressed = Vec::&lt;u8&gt;::new();</span>
+<span class='doccomment'>//! redux::compress(&amp;mut cursor1, &amp;mut compressed, AdaptiveTreeModel::new(Parameters::new(8, 14, 16).unwrap()));</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! // Decode</span>
+<span class='doccomment'>//! let mut cursor2 = std::io::Cursor::new(&amp;compressed);</span>
+<span class='doccomment'>//! let mut decompressed = Vec::&lt;u8&gt;::new();</span>
+<span class='doccomment'>//! redux::decompress(&amp;mut cursor2, &amp;mut decompressed, AdaptiveTreeModel::new(Parameters::new(8, 14, 16).unwrap()));</span>
+<span class='doccomment'>//!</span>
+<span class='doccomment'>//! assert_eq!(decompressed, data);</span>
+<span class='doccomment'>//! ```</span>
 
 <span class='attribute'>#<span class='op'>!</span>[<span class='ident'>warn</span>(<span class='ident'>missing_docs</span>)]</span>
 
