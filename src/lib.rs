@@ -1,4 +1,6 @@
-//! Adaptive arithmetic de/compression library.
+//! Adaptive arithmetic compression library.
+
+#![warn(missing_docs)]
 
 use std::boxed::Box;
 use std::io;
@@ -57,7 +59,8 @@ impl PartialEq<Error> for Error {
 /// Specialized `Result` type for the `redux` library.
 pub type Result<T> = result::Result<T, Error>;
 
-/// Compresses an entire byte stream using the given model and parameters.
+/// Compresses `istream` into `ostream` using the given `model`.
+/// Returns the number of bytes both in the decompressed and compressed stream.
 pub fn compress(istream: &mut io::Read, ostream: &mut io::Write, model: Box<model::Model>) -> Result<(u64, u64)> {
     let mut codec = Codec::new(model);
     let mut input = BitReader::new(istream);
@@ -67,7 +70,8 @@ pub fn compress(istream: &mut io::Read, ostream: &mut io::Write, model: Box<mode
     return Ok((input.get_count(), output.get_count()));
 }
 
-/// Deompresses an entire byte stream using the given model and parameters.
+/// Decompresses `istream` into `ostream` using the given `model`.
+/// Returns the number of bytes both in the compressed and decompressed stream.
 pub fn decompress(istream: &mut io::Read, ostream: &mut io::Write, model: Box<model::Model>) -> Result<(u64, u64)> {
     let mut codec = Codec::new(model);
     let mut input = BitReader::new(istream);
@@ -87,7 +91,7 @@ mod tests {
     }
 
     #[test]
-    fn test_error_eq() {
+    fn error_eq() {
         assert_eq!(Eof, Eof);
         assert_eq!(InvalidInput, InvalidInput);
         assert_eq!(IoError(io::Error::new(io::ErrorKind::Other, "Other")), IoError(io::Error::new(io::ErrorKind::NotFound, "NotFound")));

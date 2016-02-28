@@ -15,7 +15,7 @@ pub use self::adaptive_tree::AdaptiveTreeModel;
 /// Possible implementations may include static models with fixed probabilities
 /// or and adaptive model that continuously updates cumulative frequencies.
 pub trait Model {
-    /// Returns the arithmetic parameters.
+    /// Returns the arithmetic compression parameters.
     fn parameters<'a>(&'a self) -> &'a Parameters;
     /// Returns the maximum cumulative frequency.
     fn total_frequency(&self) -> u64;
@@ -23,6 +23,7 @@ pub trait Model {
     fn get_frequency(&mut self, symbol: usize) -> Result<(u64, u64)>;
     /// Returns the symbol that corresponds to the given cumulative frequency.
     fn get_symbol(&mut self, value: u64) -> Result<(usize, u64, u64)>;
+    /// Returns the cumulative frequency table for debugging purposes.
     #[cfg(debug_assertions)]
     fn get_freq_table(&self) -> Vec<(u64, u64)>;
 }
@@ -58,17 +59,17 @@ pub struct Parameters {
 }
 
 impl Parameters {
-    /// Calculates all parameter values based on the symbol, frequency and code width.
-    pub fn new(sym: usize, freq: usize, code: usize) -> Result<Parameters> {
-        if sym < 1 || freq < sym + 2 || code < freq + 2 || 64 < code + freq {
+    /// Calculates all parameter values based on the `symbol`, `frequency` and `code` width.
+    pub fn new(symbol: usize, frequency: usize, code: usize) -> Result<Parameters> {
+        if symbol < 1 || frequency < symbol + 2 || code < frequency + 2 || 64 < code + frequency {
             Err(Error::InvalidInput)
         } else {
             Ok(Parameters {
-                symbol_bits: sym,
-                symbol_eof: 1 << sym,
-                symbol_count: (1 << sym) + 1,
-                freq_bits: freq,
-                freq_max: (1 << freq) - 1,
+                symbol_bits: symbol,
+                symbol_eof: 1 << symbol,
+                symbol_count: (1 << symbol) + 1,
+                freq_bits: frequency,
+                freq_max: (1 << frequency) - 1,
                 code_bits: code,
                 code_min: 0,
                 code_one_fourth: 1 << (code - 2),
