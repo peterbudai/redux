@@ -1,4 +1,42 @@
 //! Adaptive arithmetic compression library.
+//!
+//! This crate provides standard [arithmetic coding](https://en.wikipedia.org/wiki/Arithmetic_coding) 
+//! implementation that can use customized symbol probability models.
+//! This crate offers two adaptive models: `AdaptiveLinearModel` and `AdaptiveTreeModel`. Adaptive 
+//! models continuously update the symbol probability distribution with each encoded symbol.
+//!
+//! * `AdaptiveLinearModel` is a straightforward, but slow implementation, present mainly for
+//! tasting and benchmarking purposes.
+//! 
+//! * `AdaptiveTreeModel` is a [Fenwick tree](https://en.wikipedia.org/wiki/Fenwick_tree)-based
+//! implementation, it is advised to use this model for any uses.
+//!
+//! It is possible to use a custom model (it may or may not be adaptive) by implementing the 
+//! `model::Model` trait.
+//!
+//! # Examples
+//!
+//! Any byte stream can be encoded and decoded that implements the `std::io::Read` trait, and the
+//! output can be anything that implements `std::io::Write` trait. Thus, it is possible to process
+//! files or memory objects as well.
+//!
+//! ```rust
+//! use redux::model::*;
+//!
+//! let data = vec![114u8, 101u8, 100u8, 117u8, 120u8];
+//!
+//! // Encode
+//! let mut cursor1 = std::io::Cursor::new(&data);
+//! let mut compressed = Vec::<u8>::new();
+//! redux::compress(&mut cursor1, &mut compressed, AdaptiveTreeModel::new(Parameters::new(8, 14, 16).unwrap()));
+//!
+//! // Decode
+//! let mut cursor2 = std::io::Cursor::new(&compressed);
+//! let mut decompressed = Vec::<u8>::new();
+//! redux::decompress(&mut cursor2, &mut decompressed, AdaptiveTreeModel::new(Parameters::new(8, 14, 16).unwrap()));
+//!
+//! assert_eq!(decompressed, data);
+//! ```
 
 #![warn(missing_docs)]
 
