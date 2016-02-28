@@ -120,11 +120,16 @@
 <span id="77">77</span>
 <span id="78">78</span>
 <span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Symbol frequency distribution models.</span>
 
 <span class='kw'>mod</span> <span class='ident'>adaptive_linear</span>;
 <span class='kw'>mod</span> <span class='ident'>adaptive_tree</span>;
+<span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
+<span class='kw'>mod</span> <span class='ident'>tests</span>;
 
 <span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>Error</span>;
 <span class='kw'>use</span> <span class='ident'>super</span>::<span class='prelude-ty'>Result</span>;
@@ -136,7 +141,7 @@
 <span class='doccomment'>/// Possible implementations may include static models with fixed probabilities</span>
 <span class='doccomment'>/// or and adaptive model that continuously updates cumulative frequencies.</span>
 <span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>Model</span> {
-    <span class='doccomment'>/// Returns the arithmetic parameters.</span>
+    <span class='doccomment'>/// Returns the arithmetic compression parameters.</span>
     <span class='kw'>fn</span> <span class='ident'>parameters</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Parameters</span>;
     <span class='doccomment'>/// Returns the maximum cumulative frequency.</span>
     <span class='kw'>fn</span> <span class='ident'>total_frequency</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>u64</span>;
@@ -144,6 +149,7 @@
     <span class='kw'>fn</span> <span class='ident'>get_frequency</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>symbol</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(<span class='ident'>u64</span>, <span class='ident'>u64</span>)<span class='op'>&gt;</span>;
     <span class='doccomment'>/// Returns the symbol that corresponds to the given cumulative frequency.</span>
     <span class='kw'>fn</span> <span class='ident'>get_symbol</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>value</span>: <span class='ident'>u64</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(<span class='ident'>usize</span>, <span class='ident'>u64</span>, <span class='ident'>u64</span>)<span class='op'>&gt;</span>;
+    <span class='doccomment'>/// Returns the cumulative frequency table for debugging purposes.</span>
     <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>debug_assertions</span>)]</span>
     <span class='kw'>fn</span> <span class='ident'>get_freq_table</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span>(<span class='ident'>u64</span>, <span class='ident'>u64</span>)<span class='op'>&gt;</span>;
 }
@@ -179,17 +185,17 @@
 }
 
 <span class='kw'>impl</span> <span class='ident'>Parameters</span> {
-    <span class='doccomment'>/// Calculates all parameter values based on the symbol, frequency and code width.</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>sym</span>: <span class='ident'>usize</span>, <span class='ident'>freq</span>: <span class='ident'>usize</span>, <span class='ident'>code</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Parameters</span><span class='op'>&gt;</span> {
-        <span class='kw'>if</span> <span class='ident'>sym</span> <span class='op'>&lt;</span> <span class='number'>1</span> <span class='op'>||</span> <span class='ident'>freq</span> <span class='op'>&lt;</span> <span class='ident'>sym</span> <span class='op'>+</span> <span class='number'>2</span> <span class='op'>||</span> <span class='ident'>code</span> <span class='op'>&lt;</span> <span class='ident'>freq</span> <span class='op'>+</span> <span class='number'>2</span> <span class='op'>||</span> <span class='number'>64</span> <span class='op'>&lt;</span> <span class='ident'>code</span> <span class='op'>+</span> <span class='ident'>freq</span> {
+    <span class='doccomment'>/// Calculates all parameter values based on the `symbol`, `frequency` and `code` width.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>symbol</span>: <span class='ident'>usize</span>, <span class='ident'>frequency</span>: <span class='ident'>usize</span>, <span class='ident'>code</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Parameters</span><span class='op'>&gt;</span> {
+        <span class='kw'>if</span> <span class='ident'>symbol</span> <span class='op'>&lt;</span> <span class='number'>1</span> <span class='op'>||</span> <span class='ident'>frequency</span> <span class='op'>&lt;</span> <span class='ident'>symbol</span> <span class='op'>+</span> <span class='number'>2</span> <span class='op'>||</span> <span class='ident'>code</span> <span class='op'>&lt;</span> <span class='ident'>frequency</span> <span class='op'>+</span> <span class='number'>2</span> <span class='op'>||</span> <span class='number'>64</span> <span class='op'>&lt;</span> <span class='ident'>code</span> <span class='op'>+</span> <span class='ident'>frequency</span> {
             <span class='prelude-val'>Err</span>(<span class='ident'>Error</span>::<span class='ident'>InvalidInput</span>)
         } <span class='kw'>else</span> {
             <span class='prelude-val'>Ok</span>(<span class='ident'>Parameters</span> {
-                <span class='ident'>symbol_bits</span>: <span class='ident'>sym</span>,
-                <span class='ident'>symbol_eof</span>: <span class='number'>1</span> <span class='op'>&lt;&lt;</span> <span class='ident'>sym</span>,
-                <span class='ident'>symbol_count</span>: (<span class='number'>1</span> <span class='op'>&lt;&lt;</span> <span class='ident'>sym</span>) <span class='op'>+</span> <span class='number'>1</span>,
-                <span class='ident'>freq_bits</span>: <span class='ident'>freq</span>,
-                <span class='ident'>freq_max</span>: (<span class='number'>1</span> <span class='op'>&lt;&lt;</span> <span class='ident'>freq</span>) <span class='op'>-</span> <span class='number'>1</span>,
+                <span class='ident'>symbol_bits</span>: <span class='ident'>symbol</span>,
+                <span class='ident'>symbol_eof</span>: <span class='number'>1</span> <span class='op'>&lt;&lt;</span> <span class='ident'>symbol</span>,
+                <span class='ident'>symbol_count</span>: (<span class='number'>1</span> <span class='op'>&lt;&lt;</span> <span class='ident'>symbol</span>) <span class='op'>+</span> <span class='number'>1</span>,
+                <span class='ident'>freq_bits</span>: <span class='ident'>frequency</span>,
+                <span class='ident'>freq_max</span>: (<span class='number'>1</span> <span class='op'>&lt;&lt;</span> <span class='ident'>frequency</span>) <span class='op'>-</span> <span class='number'>1</span>,
                 <span class='ident'>code_bits</span>: <span class='ident'>code</span>,
                 <span class='ident'>code_min</span>: <span class='number'>0</span>,
                 <span class='ident'>code_one_fourth</span>: <span class='number'>1</span> <span class='op'>&lt;&lt;</span> (<span class='ident'>code</span> <span class='op'>-</span> <span class='number'>2</span>),

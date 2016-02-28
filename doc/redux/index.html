@@ -46,8 +46,8 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-0' class='srclink' href='../src/redux/lib.rs.html#1-99' title='goto source code'>[src]</a></span></h1>
-<div class='docblock'><p>Adaptive arithmetic de/compression library.</p>
+        </span><a id='src-0' class='srclink' href='../src/redux/lib.rs.html#1-102' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Adaptive arithmetic compression library.</p>
 </div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
 <table>
                     <tr class=' module-item'>
@@ -92,7 +92,8 @@
                         <td><a class='fn' href='fn.compress.html'
                                title='redux::compress'>compress</a></td>
                         <td class='docblock short'>
-                             <p>Compresses an entire byte stream using the given model and parameters.</p>
+                             <p>Compresses <code>istream</code> into <code>ostream</code> using the given <code>model</code>.
+Returns the number of bytes both in the decompressed and compressed stream.</p>
 
                         </td>
                     </tr>
@@ -101,7 +102,8 @@
                         <td><a class='fn' href='fn.decompress.html'
                                title='redux::decompress'>decompress</a></td>
                         <td class='docblock short'>
-                             <p>Deompresses an entire byte stream using the given model and parameters.</p>
+                             <p>Decompresses <code>istream</code> into <code>ostream</code> using the given <code>model</code>.
+Returns the number of bytes both in the compressed and decompressed stream.</p>
 
                         </td>
                     </tr>
