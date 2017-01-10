@@ -2,7 +2,7 @@ title: Redux
 description: Adaptive Arithmetic Compression Library Written in Rust
 google_analytics: 
 show_downloads: true
-theme: jekyll-theme-slate
+theme: jekyll-theme-minimal
 
 gems:
   - jekyll-mentions
