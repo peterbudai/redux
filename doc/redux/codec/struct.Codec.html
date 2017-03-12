@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,22 +44,21 @@
 
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>redux</a>::<wbr><a href='index.html'>codec</a>::<wbr><a class='struct' href=''>Codec</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-105' class='srclink' href='../../src/redux/codec.rs.html#13-26' title='goto source code'>[src]</a></span></h1>
-<pre class='rust struct'>pub struct Codec {
-    // some fields omitted
-}</pre><div class='docblock'><p>The current state of the encoder and decoder.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../redux/codec/struct.Codec.html' title='redux::codec::Codec'>Codec</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(m: <a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='trait' href='../../redux/model/trait.Model.html' title='redux::model::Model'>Model</a>&gt;) -&gt; <a class='struct' href='../../redux/codec/struct.Codec.html' title='redux::codec::Codec'>Codec</a></code></h4>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-88' class='srclink' href='../../src/redux/src/codec.rs.html#11-24' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct Codec { /* fields omitted */ }</pre><div class='docblock'><p>The current state of the encoder and decoder.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../../redux/codec/struct.Codec.html' title='redux::codec::Codec'>Codec</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-94' class='srclink' href='../../src/redux/src/codec.rs.html#26-177' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><span id='new.v' class='invisible'><code>fn <a href='#method.new' class='fnname'>new</a>(m: <a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='trait' href='../../redux/model/trait.Model.html' title='redux::model::Model'>Model</a>&gt;) -&gt; <a class='struct' href='../../redux/codec/struct.Codec.html' title='redux::codec::Codec'>Codec</a></code></span></h4>
 <div class='docblock'><p>Creates and initializes the codec for encoding or decoding.</p>
-</div><h4 id='method.compress_symbol' class='method'><code>fn <a href='#method.compress_symbol' class='fnname'>compress_symbol</a>(&amp;mut self, symbol: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, output: &amp;mut <a class='trait' href='../../redux/bitio/trait.BitWrite.html' title='redux::bitio::BitWrite'>BitWrite</a>) -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+</div><h4 id='method.compress_symbol' class='method'><span id='compress_symbol.v' class='invisible'><code>fn <a href='#method.compress_symbol' class='fnname'>compress_symbol</a>(&amp;mut self,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; symbol: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; output: &amp;mut <a class='trait' href='../../redux/bitio/trait.BitWrite.html' title='redux::bitio::BitWrite'>BitWrite</a>)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></span></h4>
 <div class='docblock'><p>Compresses a symbol and outputs some bits depending on the state of the codec.</p>
-</div><h4 id='method.compress_bytes' class='method'><code>fn <a href='#method.compress_bytes' class='fnname'>compress_bytes</a>(&amp;mut self, input: &amp;mut <a class='trait' href='../../redux/bitio/trait.ByteRead.html' title='redux::bitio::ByteRead'>ByteRead</a>, output: &amp;mut <a class='trait' href='../../redux/bitio/trait.BitWrite.html' title='redux::bitio::BitWrite'>BitWrite</a>) -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+</div><h4 id='method.compress_stream' class='method'><span id='compress_stream.v' class='invisible'><code>fn <a href='#method.compress_stream' class='fnname'>compress_stream</a>(&amp;mut self,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; input: &amp;mut <a class='trait' href='../../redux/bitio/trait.BitRead.html' title='redux::bitio::BitRead'>BitRead</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; output: &amp;mut <a class='trait' href='../../redux/bitio/trait.BitWrite.html' title='redux::bitio::BitWrite'>BitWrite</a>)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></span></h4>
 <div class='docblock'><p>Compresses an entire byte stream outputting the EOF symbol and all bits for unambigous encoding.</p>
-</div><h4 id='method.decompress_symbol' class='method'><code>fn <a href='#method.decompress_symbol' class='fnname'>decompress_symbol</a>(&amp;mut self, input: &amp;mut <a class='trait' href='../../redux/bitio/trait.BitRead.html' title='redux::bitio::BitRead'>BitRead</a>) -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;</code></h4>
+</div><h4 id='method.decompress_symbol' class='method'><span id='decompress_symbol.v' class='invisible'><code>fn <a href='#method.decompress_symbol' class='fnname'>decompress_symbol</a>(&amp;mut self, input: &amp;mut <a class='trait' href='../../redux/bitio/trait.BitRead.html' title='redux::bitio::BitRead'>BitRead</a>) -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>&gt;</code></span></h4>
 <div class='docblock'><p>Decompresses a symbol reading some bits until the symbol can be decoded.</p>
-</div><h4 id='method.decompress_bytes' class='method'><code>fn <a href='#method.decompress_bytes' class='fnname'>decompress_bytes</a>(&amp;mut self, input: &amp;mut <a class='trait' href='../../redux/bitio/trait.BitRead.html' title='redux::bitio::BitRead'>BitRead</a>, output: &amp;mut <a class='trait' href='../../redux/bitio/trait.ByteWrite.html' title='redux::bitio::ByteWrite'>ByteWrite</a>) -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></h4>
+</div><h4 id='method.decompress_stream' class='method'><span id='decompress_stream.v' class='invisible'><code>fn <a href='#method.decompress_stream' class='fnname'>decompress_stream</a>(&amp;mut self,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; input: &amp;mut <a class='trait' href='../../redux/bitio/trait.BitRead.html' title='redux::bitio::BitRead'>BitRead</a>,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; output: &amp;mut <a class='trait' href='../../redux/bitio/trait.BitWrite.html' title='redux::bitio::BitWrite'>BitWrite</a>)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;</code></span></h4>
 <div class='docblock'><p>Decompresses a whole bit stream until the EOF symbol is found.</p>
 </div></div></section>
     <section id='search' class="content hidden"></section>
@@ -83,6 +83,8 @@
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -103,7 +105,7 @@
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>
@@ -114,11 +116,9 @@
     <script>
         window.rootPath = "../../";
         window.currentCrate = "redux";
-        window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
-    
     <script defer src="../../search-index.js"></script>
 </body>
 </html>

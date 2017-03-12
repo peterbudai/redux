@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,22 +44,27 @@
 
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>redux</a>::<wbr><a href='index.html'>model</a>::<wbr><a class='struct' href=''>AdaptiveLinearModel</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-189' class='srclink' href='../../src/redux/model/adaptive_linear.rs.html#12-17' title='goto source code'>[src]</a></span></h1>
-<pre class='rust struct'>pub struct AdaptiveLinearModel {
-    // some fields omitted
-}</pre><div class='docblock'><p>Adaptive model that uses a simple array for cumulative freq
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-142' class='srclink' href='../../src/redux/src/model/adaptive_linear.rs.html#12-17' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct AdaptiveLinearModel { /* fields omitted */ }</pre><div class='docblock'><p>Adaptive model that uses a simple array for cumulative freq
 and simple, but slow linear algorithms for operations.</p>
-</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../redux/model/struct.AdaptiveLinearModel.html' title='redux::model::AdaptiveLinearModel'>AdaptiveLinearModel</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(p: <a class='struct' href='../../redux/model/struct.Parameters.html' title='redux::model::Parameters'>Parameters</a>) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='trait' href='../../redux/model/trait.Model.html' title='redux::model::Model'>Model</a>&gt;</code></h4>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../../redux/model/struct.AdaptiveLinearModel.html' title='redux::model::AdaptiveLinearModel'>AdaptiveLinearModel</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-145' class='srclink' href='../../src/redux/src/model/adaptive_linear.rs.html#19-40' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><span id='new.v' class='invisible'><code>fn <a href='#method.new' class='fnname'>new</a>(p: <a class='struct' href='../../redux/model/struct.Parameters.html' title='redux::model::Parameters'>Parameters</a>) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='trait' href='../../redux/model/trait.Model.html' title='redux::model::Model'>Model</a>&gt;</code></span></h4>
 <div class='docblock'><p>Initializes the model with the given parameters.</p>
-</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='../../redux/model/trait.Model.html' title='redux::model::Model'>Model</a> for <a class='struct' href='../../redux/model/struct.AdaptiveLinearModel.html' title='redux::model::AdaptiveLinearModel'>AdaptiveLinearModel</a></code></h3><div class='impl-items'><h4 id='method.parameters' class='method'><code>fn <a href='../../redux/model/trait.Model.html#method.parameters' class='fnname'>parameters</a>&lt;'a&gt;(&amp;'a self) -&gt; &amp;'a <a class='struct' href='../../redux/model/struct.Parameters.html' title='redux::model::Parameters'>Parameters</a></code></h4>
-<h4 id='method.total_frequency' class='method'><code>fn <a href='../../redux/model/trait.Model.html#method.total_frequency' class='fnname'>total_frequency</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a></code></h4>
-<h4 id='method.get_frequency' class='method'><code>fn <a href='../../redux/model/trait.Model.html#method.get_frequency' class='fnname'>get_frequency</a>(&amp;mut self, symbol: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>)</a>&gt;</code></h4>
-<h4 id='method.get_symbol' class='method'><code>fn <a href='../../redux/model/trait.Model.html#method.get_symbol' class='fnname'>get_symbol</a>(&amp;mut self, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>) -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>)</a>&gt;</code></h4>
-<h4 id='method.get_freq_table' class='method'><code>fn <a href='../../redux/model/trait.Model.html#method.get_freq_table' class='fnname'>get_freq_table</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>)</a>&gt;</code></h4>
-</div></section>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='../../redux/model/trait.Model.html' title='redux::model::Model'>Model</a> for <a class='struct' href='../../redux/model/struct.AdaptiveLinearModel.html' title='redux::model::AdaptiveLinearModel'>AdaptiveLinearModel</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-154' class='srclink' href='../../src/redux/src/model/adaptive_linear.rs.html#42-80' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.parameters' class='method'><span id='parameters.v' class='invisible'><code>fn <a href='../../redux/model/trait.Model.html#tymethod.parameters' class='fnname'>parameters</a>&lt;'a&gt;(&amp;'a self) -&gt; &amp;'a <a class='struct' href='../../redux/model/struct.Parameters.html' title='redux::model::Parameters'>Parameters</a></code></span></h4>
+<div class='docblock'><p>Returns the arithmetic compression parameters.</p>
+</div><h4 id='method.total_frequency' class='method'><span id='total_frequency.v' class='invisible'><code>fn <a href='../../redux/model/trait.Model.html#tymethod.total_frequency' class='fnname'>total_frequency</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a></code></span></h4>
+<div class='docblock'><p>Returns the maximum cumulative frequency.</p>
+</div><h4 id='method.get_frequency' class='method'><span id='get_frequency.v' class='invisible'><code>fn <a href='../../redux/model/trait.Model.html#tymethod.get_frequency' class='fnname'>get_frequency</a>(&amp;mut self, symbol: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>&gt;</code></span></h4>
+<div class='docblock'><p>Returns the cumulative frequency range for the given input symbol.</p>
+</div><h4 id='method.get_symbol' class='method'><span id='get_symbol.v' class='invisible'><code>fn <a href='../../redux/model/trait.Model.html#tymethod.get_symbol' class='fnname'>get_symbol</a>(&amp;mut self, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>) -&gt; <a class='type' href='../../redux/type.Result.html' title='redux::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>&gt;</code></span></h4>
+<div class='docblock'><p>Returns the symbol that corresponds to the given cumulative frequency.</p>
+</div><h4 id='method.get_freq_table' class='method'><span id='get_freq_table.v' class='invisible'><code>fn <a href='../../redux/model/trait.Model.html#tymethod.get_freq_table' class='fnname'>get_freq_table</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a>&gt;</code></span></h4>
+<div class='docblock'><p>Returns the cumulative frequency table for debugging purposes.</p>
+</div></div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>
@@ -81,6 +87,8 @@ and simple, but slow linear algorithms for operations.</p>
                     <dd>Move down in search results</dd>
                     <dt>&#9166;</dt>
                     <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
                 </dl>
             </div>
 
@@ -101,7 +109,7 @@ and simple, but slow linear algorithms for operations.</p>
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>
@@ -112,11 +120,9 @@ and simple, but slow linear algorithms for operations.</p>
     <script>
         window.rootPath = "../../";
         window.currentCrate = "redux";
-        window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
     <script src="../../main.js"></script>
-    
     <script defer src="../../search-index.js"></script>
 </body>
 </html>
