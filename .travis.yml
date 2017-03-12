@@ -3,5 +3,5 @@ branches:
     only:
         - master
 script:
-    - cargo build --verbose
-    - cargo test --verbose --release
+    - cargo build
+    - cargo test --release

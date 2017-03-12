@@ -1,6 +1,6 @@
 [package]
 name = "redux"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Péter Budai <buc@peterbudai.eu>"]
 description = "Adaptive arithmetic compression library written in Rust"
 keywords = ["compression", "arithmetic", "coding", "adaptive"]
