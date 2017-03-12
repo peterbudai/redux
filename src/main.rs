@@ -40,14 +40,14 @@ impl Options {
             match arg.as_ref() {
                 "-c" => { options.compress = Some(true); },
                 "-d" => { options.compress = Some(false); },
-                "-i" => { 
+                "-i" => {
                     if let Some(val) = args.next() {
                         options.input = Some(PathBuf::from(val));
                     } else {
                         return None;
                     }
                 }
-                "-o" => { 
+                "-o" => {
                     if let Some(val) = args.next() {
                         options.output = Some(PathBuf::from(val));
                     } else {
@@ -92,7 +92,7 @@ fn main() {
     } else {
         match fs::File::open(options.input_file()) {
             Ok(f) => Box::new(f),
-            Err(e) => { exit_with_error!(2, "Error while opening input file {}: {}", options.output_file().to_string_lossy(), e); } 
+            Err(e) => { exit_with_error!(2, "Error while opening input file {}: {}", options.output_file().to_string_lossy(), e); }
         }
     };
 
@@ -101,7 +101,7 @@ fn main() {
     } else {
         match fs::File::create(options.output_file()) {
             Ok(f) => Box::new(f),
-            Err(e) => { exit_with_error!(2, "Error while opening output file {}: {}", options.output_file().to_string_lossy(), e); } 
+            Err(e) => { exit_with_error!(2, "Error while opening output file {}: {}", options.output_file().to_string_lossy(), e); }
         }
     };
 

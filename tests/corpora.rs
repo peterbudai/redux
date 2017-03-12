@@ -29,7 +29,7 @@ macro_rules! speed {
     ($d:expr, $t:expr) => ($d as f64 / $t / 1024f64 / 1024f64)
 }
 
-fn test_operation(model: fn(Parameters) -> Box<Model>, bits: usize, 
+fn test_operation(model: fn(Parameters) -> Box<Model>, bits: usize,
                  codec: fn(&mut Read, &mut Write, Box<Model>) -> redux::Result<(u64, u64)>,
                  input: &Vec<u8>, output: &mut Vec<u8>) -> f64 {
     let model = model(Parameters::new(8, bits, bits + 2).unwrap());

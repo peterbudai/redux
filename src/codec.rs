@@ -3,9 +3,7 @@
 use std::boxed::Box;
 use super::Error;
 use super::Result;
-use super::bitio::ByteRead;
 use super::bitio::BitRead;
-use super::bitio::ByteWrite;
 use super::bitio::BitWrite;
 use super::model::Model;
 
@@ -39,9 +37,9 @@ impl Codec {
 
     /// Outputs a bit and the preceeding pending bits, if any.
     fn put_bit(&mut self, bit: bool, output: &mut BitWrite) -> Result<()> {
-        try!(output.write_bit(bit));
+        try!(output.write_bits(if bit { 1 } else { 0 }, 1));
         while self.pending > 0 {
-            try!(output.write_bit(!bit));
+            try!(output.write_bits(if bit { 0 } else { 1 }, 1));
             self.pending -= 1;
         }
         return Ok(());
@@ -49,7 +47,7 @@ impl Codec {
 
     /// Inputs a bit.
     fn get_bit(&mut self, input: &mut BitRead) -> Result<()> {
-        self.pending = (self.pending << 1) | if try!(input.read_bit()) { 1 } else { 0 };
+        self.pending = (self.pending << 1) | try!(input.read_bits(1)) as u64;
         Ok(())
     }
 
@@ -103,13 +101,9 @@ impl Codec {
     }
 
     /// Compresses an entire byte stream outputting the EOF symbol and all bits for unambigous encoding.
-    pub fn compress_bytes(&mut self, input: &mut ByteRead, output: &mut BitWrite) -> Result<()> {
-        if { self.model.parameters().symbol_bits } != 8 {
-            return Err(Error::InvalidInput)
-        }
-
+    pub fn compress_stream(&mut self, input: &mut BitRead, output: &mut BitWrite) -> Result<()> {
         loop {
-            let symbol = match input.read_byte() {
+            let symbol = match input.read_bits({ self.model.parameters().symbol_bits }) {
                 Ok(b) => b as usize,
                 Err(Error::Eof) => { self.model.parameters().symbol_eof },
                 Err(e) => { return Err(e); }
@@ -167,18 +161,14 @@ impl Codec {
     }
 
     /// Decompresses a whole bit stream until the EOF symbol is found.
-    pub fn decompress_bytes(&mut self, input: &mut BitRead, output: &mut ByteWrite) -> Result<()> {
-        if { self.model.parameters().symbol_bits } != 8 {
-            return Err(Error::InvalidInput)
-        }
-
+    pub fn decompress_stream(&mut self, input: &mut BitRead, output: &mut BitWrite) -> Result<()> {
         loop {
             let symbol = try!(self.decompress_symbol(input));
 
             if symbol == { self.model.parameters().symbol_eof } {
                 break;
             } else {
-                try!(output.write_byte(symbol as u8));
+                try!(output.write_bits(symbol, { self.model.parameters().symbol_bits }));
             }
         }
 

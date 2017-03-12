@@ -1,17 +1,17 @@
 //! Adaptive arithmetic compression library.
 //!
-//! This crate provides standard [arithmetic coding](https://en.wikipedia.org/wiki/Arithmetic_coding) 
+//! This crate provides standard [arithmetic coding](https://en.wikipedia.org/wiki/Arithmetic_coding)
 //! implementation that can use customized symbol probability models.
-//! This crate offers two adaptive models: `AdaptiveLinearModel` and `AdaptiveTreeModel`. Adaptive 
+//! This crate offers two adaptive models: `AdaptiveLinearModel` and `AdaptiveTreeModel`. Adaptive
 //! models continuously update the symbol probability distribution with each encoded symbol.
 //!
 //! * `AdaptiveLinearModel` is a straightforward, but slow implementation, present mainly for
 //! tasting and benchmarking purposes.
-//! 
+//!
 //! * `AdaptiveTreeModel` is a [Fenwick tree](https://en.wikipedia.org/wiki/Fenwick_tree)-based
 //! implementation, it is advised to use this model for any uses.
 //!
-//! It is possible to use a custom model (it may or may not be adaptive) by implementing the 
+//! It is possible to use a custom model (it may or may not be adaptive) by implementing the
 //! `model::Model` trait.
 //!
 //! # Examples
@@ -23,17 +23,17 @@
 //! ```rust
 //! use redux::model::*;
 //!
-//! let data = vec![114u8, 101u8, 100u8, 117u8, 120u8];
+//! let data = vec![0x72u8, 0x65u8, 0x64u8, 0x75u8, 0x78u8];
 //!
 //! // Encode
 //! let mut cursor1 = std::io::Cursor::new(&data);
 //! let mut compressed = Vec::<u8>::new();
-//! redux::compress(&mut cursor1, &mut compressed, AdaptiveTreeModel::new(Parameters::new(8, 14, 16).unwrap()));
+//! assert!(redux::compress(&mut cursor1, &mut compressed, AdaptiveTreeModel::new(Parameters::new(8, 14, 16).unwrap())).is_ok());
 //!
 //! // Decode
 //! let mut cursor2 = std::io::Cursor::new(&compressed);
 //! let mut decompressed = Vec::<u8>::new();
-//! redux::decompress(&mut cursor2, &mut decompressed, AdaptiveTreeModel::new(Parameters::new(8, 14, 16).unwrap()));
+//! assert!(redux::decompress(&mut cursor2, &mut decompressed, AdaptiveTreeModel::new(Parameters::new(8, 14, 16).unwrap())).is_ok());
 //!
 //! assert_eq!(decompressed, data);
 //! ```
@@ -104,7 +104,7 @@ pub fn compress(istream: &mut io::Read, ostream: &mut io::Write, model: Box<mode
     let mut input = BitReader::new(istream);
     let mut output = BitWriter::new(ostream);
 
-    try!(codec.compress_bytes(&mut input, &mut output));
+    try!(codec.compress_stream(&mut input, &mut output));
     return Ok((input.get_count(), output.get_count()));
 }
 
@@ -115,7 +115,7 @@ pub fn decompress(istream: &mut io::Read, ostream: &mut io::Write, model: Box<mo
     let mut input = BitReader::new(istream);
     let mut output = BitWriter::new(ostream);
 
-    try!(codec.decompress_bytes(&mut input, &mut output));
+    try!(codec.decompress_stream(&mut input, &mut output));
     return Ok((input.get_count(), output.get_count()));
 }
 
@@ -123,7 +123,7 @@ pub fn decompress(istream: &mut io::Read, ostream: &mut io::Write, model: Box<mo
 mod tests {
     use super::Error::*;
     use std::io;
-    
+
     macro_rules! assert_ne {
         ($a:expr, $b:expr) => ($a != $b)
     }

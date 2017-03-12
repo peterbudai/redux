@@ -2,6 +2,7 @@ Redux - Adaptive Arithmetic Compression Library Written in Rust
 ===============================================================
 
 [![Build Status](https://travis-ci.org/peterbudai/redux.svg?branch=master)](https://travis-ci.org/peterbudai/redux)
+[![Crates.io](https://img.shields.io/crates/v/redux.svg)](https://crates.io/crates/redux)
 
 Overview
 --------

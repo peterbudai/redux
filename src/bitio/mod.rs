@@ -5,8 +5,9 @@ mod tests;
 
 use std::io::Read;
 use std::io::Write;
+use std::mem::size_of;
 use super::Result;
-use super::Error::{Eof, IoError};
+use super::Error::{Eof, IoError, InvalidInput};
 
 /// A trait for counting the number of bytes flowing trough a `Read` or `Write` implementation.
 pub trait ByteCount {
@@ -14,157 +15,186 @@ pub trait ByteCount {
     fn get_count(&self) -> u64;
 }
 
-/// A trait for object that allow writing one byte at a time.
-pub trait ByteWrite {
-    /// Writes a single byte to the output.
-    fn write_byte(&mut self, byte: u8) -> Result<()>;
+/// A trait for object that allow reading symbols of variable bit lengths.
+pub trait BitRead {
+    /// Reads a single symbol from the input.
+    fn read_bits(&mut self, bits: usize) -> Result<usize>;
 }
 
-/// A trait for object that allow writing one bit at a time.
+/// A trait for object that allows writing symbols of variable bit lengths.
 pub trait BitWrite {
-    /// Writes a single bit to the output.
-    fn write_bit(&mut self, bit: bool) -> Result<()>;
-    /// Flushes all remaining bits to the output after the last whole octet.
+    /// Writes a single symbol to the output.
+    fn write_bits(&mut self, symbol: usize, bits: usize) -> Result<()>;
+    /// Flushes all remaining bits to the output after the last whole octet, padded with zero bits.
     fn flush_bits(&mut self) -> Result<()>;
 }
 
-/// A class for wrapping a byte output stream in a bit based interface.
-pub struct BitWriter<'a> {
-    /// The actual byte output stream.
-    output: &'a mut Write,
-    /// The buffer for the bits of the next byte to output.
-    next: [u8; 1],
-    /// The mask that selects the next bit in the buffer.
-    mask: u8,
-    /// Number of bytes output.
+/// Common data fields used by the reader and writer implementations.
+struct BitBuffer {
+    /// Byte buffer that holds currently unread or unwritten bits.
+    bytes: [u8; 1usize],
+    /// Number of uread or unwritten bits in the buffer.
+    bits: usize,
+    /// Number of bytes read or written to the underlying buffer.
     count: u64,
 }
 
-impl<'a> BitWriter<'a> {
-    /// Creates a new instance by wrapping a byte output stream.
-    pub fn new(w: &'a mut Write) -> BitWriter<'a> {
-        BitWriter { output: w, next: [0x00], mask: 0x80, count: 0 }
-    }
-
-    /// Writes the next byte from the bit buffer to the output stream.
-    fn write_next(&mut self) -> Result<()> {
-        match self.output.write_all(&self.next) {
-            Ok(_) => { self.count += 1; Ok(()) },
-            Err(e) => Err(IoError(e)),
+impl BitBuffer {
+    /// Creates a new instance with an empty buffer.
+    fn new() -> BitBuffer {
+        BitBuffer {
+            bytes: [0u8; 1usize],
+            bits: 0usize,
+            count: 0u64,
         }
     }
 }
 
-impl<'a> ByteCount for BitWriter<'a> {
-    /// Returns the number of bytes written to the output.
-    fn get_count(&self) -> u64 {
-        self.count
-    }
-
-}
-
-impl<'a> ByteWrite for BitWriter<'a> {
-    fn write_byte(&mut self, byte: u8) -> Result<()> {
-        self.next[0] = byte;
-        self.write_next()
-    }
-}
-
-impl<'a> BitWrite for BitWriter<'a> {
-    fn write_bit(&mut self, bit: bool) -> Result<()> {
-        if bit {
-            self.next[0] |= self.mask;
-        }
-
-        self.mask >>= 1;
-        if self.mask == 0 {
-            self.flush_bits()
-        } else {
-            Ok(())
-        }
-    }
-
-    fn flush_bits(&mut self) -> Result<()> {
-        if self.mask == 0x80 {
-            Ok(())
-        } else if let Err(e) = self.write_next() {
-            Err(e)
-        } else {
-            self.mask = 0x80;
-            self.next[0] = 0x00;
-            Ok(())
-        }
-    }
-}
-
-/// A trait for object that allow reading one byte at a time.
-pub trait ByteRead {
-    /// Reads a single byte from the input.
-    fn read_byte(&mut self) -> Result<u8>;
-}
-
-/// A trait for object that allow reading one bit at a time.
-pub trait BitRead {
-    /// Reads a single bit from the input.
-    fn read_bit(&mut self) -> Result<bool>;
-}
-
-/// A class for wrapping a byte input stream in a bit based interface.
+/// Actual implementation of bit-oriented input reader.
 pub struct BitReader<'a> {
-    /// The actual byte input stream.
+    /// Temporary buffer to store unused bits.
+    buffer: BitBuffer,
+    /// Underlying byte-oriented I/O stream.
     input: &'a mut Read,
-    /// The buffer for the bits of the current byte being input.
-    next: [u8; 1],
-    /// The mask that selects the next bit in the buffer.
-    mask: u8,
-    /// Number of bytes input.
-    count: u64,
 }
 
 impl<'a> BitReader<'a> {
     /// Creates a new instance by wrapping a byte input stream.
-    pub fn new(r: &'a mut Read) -> BitReader<'a> {
-        BitReader { input: r, next: [0x00], mask: 0x00, count: 0 }
-    }
-
-    /// Reads the next byte from the input stream to the bit buffer.
-    fn read_next(&mut self) -> Result<()> {
-        match self.input.read(&mut self.next) {
-            Ok(0) => Err(Eof),
-            Ok(_) => { self.count += 1; Ok(()) },
-            Err(e) => Err(IoError(e)),
+    pub fn new(reader: &'a mut Read) -> BitReader<'a> {
+        BitReader {
+            buffer: BitBuffer::new(),
+            input: reader,
         }
     }
 }
 
 impl<'a> ByteCount for BitReader<'a> {
-    /// Returns the number of bytes written to the output.
     fn get_count(&self) -> u64 {
-        self.count
-    }
-
-}
-
-impl<'a> ByteRead for BitReader<'a> {
-    fn read_byte(&mut self) -> Result<u8> {
-        match self.read_next() {
-            Ok(()) => Ok(self.next[0]),
-            Err(e) => Err(e),
-        }
+        self.buffer.count
     }
 }
 
 impl<'a> BitRead for BitReader<'a> {
-    fn read_bit(&mut self) -> Result<bool> {
-        if self.mask == 0 {
-            if let Err(e) = self.read_next() {
-                return Err(e);
-            }
-            self.mask = 0x80;
+    fn read_bits(&mut self, mut bits: usize) -> Result<usize> {
+        if bits > size_of::<usize>() * 8 {
+            return Err(InvalidInput);
         }
-        let bit = (self.next[0] & self.mask) != 0;
-        self.mask >>= 1;
-        return Ok(bit);
+
+        let mut result = 0usize;
+        while bits > 0 {
+            if self.buffer.bits >= bits {
+                // Get the upper bits from buffer (bytes: 000xxxyy -> 00000xxx)
+                result <<= bits;
+                result |= self.buffer.bytes[0] as usize >> (self.buffer.bits - bits);
+                // Update buffer (bytes: 000xxxyy -> 000000yy)
+                self.buffer.bits -= bits;
+                self.buffer.bytes[0] &= (1 << self.buffer.bits) - 1;
+                // Update reamining bits to read
+                bits = 0
+            } else if self.buffer.bits > 0 {
+                // Get remaining bits from the buffer (bytes: 000000yy)
+                result <<= self.buffer.bits;
+                result |= self.buffer.bytes[0] as usize;
+                // Update reamining bits to read
+                bits -= self.buffer.bits;
+                // Update buffer
+                self.buffer.bytes[0] = 0;
+                self.buffer.bits = 0;
+            } else {
+                // Read next byte from the underlying input stream
+                match self.input.read(&mut self.buffer.bytes) {
+                    Ok(0) => {
+                        return Err(Eof);
+                    },
+                    Ok(_) => {
+                        self.buffer.count += 1;
+                        self.buffer.bits = 8;
+                    },
+                    Err(e) => {
+                        return Err(IoError(e));
+                    }
+                }
+            }
+        }
+        return Ok(result);
+    }
+}
+
+/// Actual implementation of bit-oriented outour writer.
+pub struct BitWriter<'a> {
+    /// Temporary buffer to store unused bits.
+    buffer: BitBuffer,
+    /// Underlying byte-oriented I/O stream.
+    output: &'a mut Write,
+}
+
+impl<'a> BitWriter<'a> {
+    /// Creates a new instance by wrapping a byte output stream.
+    pub fn new(writer: &'a mut Write) -> BitWriter<'a> {
+        BitWriter {
+            buffer: BitBuffer::new(),
+            output: writer
+        }
+    }
+}
+
+impl<'a> ByteCount for BitWriter<'a> {
+    fn get_count(&self) -> u64 {
+        self.buffer.count
+    }
+}
+
+impl<'a> BitWrite for BitWriter<'a> {
+    fn write_bits(&mut self, mut symbol: usize, mut bits: usize) -> Result<()> {
+        if (bits > size_of::<usize>() * 8) || (symbol >> bits > 0){
+            return Err(InvalidInput);
+        }
+
+        while bits > 0 {
+            if self.buffer.bits + bits <= 8 {
+                // Put the upper bits into buffer (symbol: 00000yyy, bytes: 000000xx -> 000xxyyy)
+                if self.buffer.bits > 0 {
+                    self.buffer.bytes[0] <<= bits;
+                }
+                self.buffer.bytes[0] |= symbol as u8;
+                self.buffer.bits += bits;
+                // Update remaining bits to write
+                bits = 0;
+                symbol = 0;
+            } else if self.buffer.bits < 8 {
+                let num = 8 - self.buffer.bits;
+                // Put the upper bits into buffer (symbol: 000yyyzz -> 00000yyy, bytes: 000xxxxx -> xxxxxyyy)
+                if self.buffer.bits > 0 {
+                    self.buffer.bytes[0] <<= num;
+                }
+                self.buffer.bytes[0] |= (symbol >> (bits - num)) as u8;
+                self.buffer.bits += num;
+                // Update remaining bits to write (symbol: 000yyyzz -> 000000zz)
+                bits -= num;
+                symbol &= (1 << bits) - 1;
+            }
+            if self.buffer.bits == 8 {
+                try!(self.flush_bits())
+            }
+        }
+        return Ok(())
+    }
+
+    fn flush_bits(&mut self) -> Result<()> {
+        if self.buffer.bits > 0 {
+            self.buffer.bytes[0] <<= 8 - self.buffer.bits;
+            match self.output.write_all(&self.buffer.bytes) {
+                Ok(_) => {
+                    self.buffer.count += 1;
+                    self.buffer.bytes[0] = 0;
+                    self.buffer.bits = 0;
+                },
+                Err(e) => {
+                    return Err(IoError(e));
+                }
+            }
+        }
+        return Ok(())
     }
 }
 
